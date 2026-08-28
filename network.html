@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projelerim - Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .network-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; width: 100%; max-width: 950px; }
+        .network-card { background: var(--card-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; text-align: left; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; }
+        .network-card:hover { border-color: var(--primary); transform: translateY(-4px); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">HUB SYSTEM</div>
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="script.html">Scriptler</a>
+            <a href="status.html">Durum</a>
+            <a href="network.html" class="active">Projelerim</a>
+            <a href="key.html">Key Sistemi</a>
+            <div class="theme-picker">
+                <div class="theme-dot" style="background:#6366f1;" onclick="setTheme('')"></div>
+                <div class="theme-dot" style="background:#10b981;" onclick="setTheme('theme-green')"></div>
+                <div class="theme-dot" style="background:#ef4444;" onclick="setTheme('theme-red')"></div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container" style="justify-content: flex-start;">
+        <h1 style="font-size: 36px; margin-top: 20px;">Proje <span>Ağı</span></h1>
+        <p>Geliştirdiğim tüm web platformlarına ve hub projelerine buradan ulaşabilirsin.</p>
+
+        <div class="network-grid">
+            <div class="network-card">
+                <div>
+                    <h3>VeloX-Hub</h3>
+                    <p style="font-size: 13px; margin-bottom: 15px;">Özel script dağıtım ve ana platform arayüzü.</p>
+                </div>
+                <a href="https://lrbear.github.io/VeloX-Hub/" target="_blank" class="btn" style="width: 100%; justify-content: center;">🔗 Siteye Git</a>
+            </div>
+            <div class="network-card">
+                <div>
+                    <h3>klakzsweb</h3>
+                    <p style="font-size: 13px; margin-bottom: 15px;">Klakz Hub arayüzü ve script yönetim paneli.</p>
+                </div>
+                <a href="https://lrbear.github.io/klakzsweb/" target="_blank" class="btn" style="width: 100%; justify-content: center;">🔗 Siteye Git</a>
+            </div>
+            <div class="network-card">
+                <div>
+                    <h3>TLEAN Series</h3>
+                    <p style="font-size: 13px; margin-bottom: 15px;">TLEAN, TLEAN2 ve TLEAN-v4 proje sürümleri.</p>
+                </div>
+                <a href="https://lrbear.github.io/TLEAN/" target="_blank" class="btn" style="width: 100%; justify-content: center;">🔗 Siteye Git</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
+        <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord</a>
+    </footer>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('hub_theme');
+            if (savedTheme) document.body.className = savedTheme;
+        });
+        function setTheme(themeClass) {
+            document.body.className = themeClass;
+            localStorage.setItem('hub_theme', themeClass);
+        }
+    </script>
+</body>
+</html>
