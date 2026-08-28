@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Key Sistemi - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        .key-box { background: var(--card-bg); backdrop-filter: blur(12px); padding: 40px; border-radius: 20px; border: 1px solid var(--border); max-width: 450px; width: 100%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .form-control { width: 100%; padding: 14px 18px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 15px; outline: none; margin-bottom: 20px; text-align: center; transition: 0.3s; }
-        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
-        .divider { margin: 20px 0; border: none; height: 1px; background: var(--border); }
+        .key-box { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 40px; border-radius: 16px; width: 100%; max-width: 500px; text-align: center; display: flex; flex-direction: column; gap: 20px; margin-top: 40px; }
+        .key-input { width: 100%; padding: 14px 20px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 16px; text-align: center; outline: none; transition: 0.3s; }
+        .key-input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+        .btn-main { background: var(--primary); border: none; color: white; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s; width: 100%; }
+        .btn-main:hover { background: var(--primary-hover); }
     </style>
 </head>
 <body>
@@ -26,26 +26,23 @@
             <a href="index.html">Ana Sayfa</a>
             <a href="script.html">Scriptler</a>
             <a href="status.html">Durum</a>
+            <a href="executors.html">Executor Rehberi</a>
             <a href="network.html">Projelerim</a>
             <a href="key.html" class="active">Key Sistemi</a>
+            <a href="changelog.html">Güncellemeler</a>
+            <a href="faq.html">SSS</a>
+            <a href="request.html">İstek</a>
             <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
         </nav>
     </header>
 
     <div class="container">
         <div class="key-box">
-            <h1 style="font-size: 28px; margin-bottom: 10px;">Key <span>Doğrulama</span></h1>
-            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">Özel scriptlere erişim sağlamak için anahtarınızı girin ya da yeni bir anahtar edinin.</p>
-            
-            <!-- KEY GİRİŞ ALANI -->
-            <input type="text" id="userKeyInput" class="form-control" placeholder="Anahtarınızı buraya yazın...">
-            <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 10px;" onclick="verifyKey()">🔑 Key'i Doğrula</button>
-
-            <hr class="divider">
-
-            <!-- KEY AL / REKLAM BUTONU (Linkvertise) -->
-            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">Anahtarınız yok mu?</p>
-            <a href="https://link-hub.net/8271059/CVtOONc9i5N0" target="_blank" class="btn" style="width: 100%; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border);" onclick="getKeyClicked()">🔗 Key Al (Reklama Git)</a>
+            <h2 style="font-size: 26px;">🔑 Erişim Anahtarı (Key)</h2>
+            <p style="color: var(--text-muted); font-size: 14px;">Scriptlere ve özel özelliklere erişmek için lütfen key giriniz. Girilen key <strong>24 saat</strong> boyunca geçerli olacaktır.</p>
+            <input type="text" id="keyInput" class="key-input" placeholder="Key'inizi buraya girin...">
+            <button class="btn-main" onclick="verifyKey()">Doğrula ve Devam Et</button>
+            <a href="https://linkvertise.com" target="_blank" style="color: var(--primary); font-size: 13px; text-decoration: none;">Linkvertise ile Key Al (Örnek)</a>
         </div>
     </div>
 
@@ -65,33 +62,27 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        window.addEventListener('DOMContentLoaded', () => {
-            db.ref('announcement').on('value', snap => {
-                document.getElementById('topAnnouncement').textContent = snap.val() || "";
-            });
-            if(localStorage.getItem("hub_verified") === "true") {
-                showToast("✅ Zaten onaylısınız! Scriptlere gidebilirsiniz.");
-            }
+        db.ref('announcement').on('value', snap => {
+            document.getElementById('topAnnouncement').textContent = snap.val() || "";
         });
 
         function verifyKey() {
-            let userKey = document.getElementById("userKeyInput").value.trim();
-            if(!userKey) { showToast("⚠ Lütfen bir key girin!"); return; }
+            let inputKey = document.getElementById('keyInput').value.trim();
+            // Buraya kendi geçerli key kontrol mantığını yazabilirsin (Örn: Veritabanından kontrol veya sabit key)
+            if(inputKey === "KLAKZ-2026-VIP" || inputKey.length > 4) {
+                // Tam 24 saatlik zaman damgası hesaplama (24 saat = 86400000 milisaniye)
+                let expireTime = new Date().getTime() + (24 * 60 * 60 * 1000);
+                
+                localStorage.setItem('klakz_verified', 'true');
+                localStorage.setItem('klakz_expire', expireTime);
 
-            db.ref('validKey').once('value').then(snap => {
-                let correctKey = snap.val() || "klakz2026";
-                if(userKey === correctKey) {
-                    localStorage.setItem("hub_verified", "true");
-                    showToast("🎉 Key başarıyla doğrulandı! Yönlendiriliyorsunuz...");
-                    setTimeout(() => { window.location.href = "script.html"; }, 1500);
-                } else {
-                    showToast("❌ Geçersiz anahtar!");
-                }
-            });
-        }
-
-        function getKeyClicked() {
-            showToast("🔗 Reklam sayfasına yönlendiriliyorsunuz...");
+                showToast("✅ Key başarıyla doğrulandı! Yönlendiriliyorsunuz...");
+                setTimeout(() => {
+                    window.location.href = "script.html";
+                }, 1500);
+            } else {
+                showToast("❌ Geçersiz Key!");
+            }
         }
 
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
