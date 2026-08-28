@@ -55,7 +55,7 @@ header {
 }
 nav {
     display: flex;
-    gap: 20px;
+    gap: 18px;
     align-items: center;
     flex-wrap: wrap;
 }
@@ -73,7 +73,7 @@ nav a:hover, nav a.active {
 .theme-picker {
     display: flex;
     gap: 6px;
-    margin-left: 10px;
+    margin-left: 5px;
 }
 .theme-dot {
     width: 16px;
