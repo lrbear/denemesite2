@@ -14,7 +14,7 @@
 </head>
 <body>
 
-    <div class="announcement-bar">🔥 v2.5 Güncellemesi Yayında! Yeni scriptler ve tema desteği eklendi.</div>
+    <div class="announcement-bar">🔥 v3.0 Güncellemesi Yayında! Canlı Admin Paneli Aktif.</div>
 
     <header>
         <div class="logo">HUB SYSTEM</div>
@@ -25,6 +25,7 @@
             <a href="status.html" class="active">Durum</a>
             <a href="network.html">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
+            <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
             <div class="theme-picker">
                 <div class="theme-dot" style="background:#6366f1;" onclick="setTheme('')"></div>
                 <div class="theme-dot" style="background:#10b981;" onclick="setTheme('theme-green')"></div>
@@ -37,21 +38,8 @@
         <h1 style="font-size: 36px; margin-top: 20px;">Sistem <span>Durumu</span></h1>
         <p>Scriptlerimizin anlık çalışma durumunu buradan takip edebilirsin.</p>
 
-        <div class="status-grid">
-            <div class="status-card">
-                <div>
-                    <h3>Lumber Tycoon 2 Hub</h3>
-                    <p style="font-size: 13px; margin: 5px 0 0 0;">Son Kontrol: Az önce</p>
-                </div>
-                <span class="badge-working">🟢 Çalışıyor</span>
-            </div>
-            <div class="status-card">
-                <div>
-                    <h3>Murder Mystery 2</h3>
-                    <p style="font-size: 13px; margin: 5px 0 0 0;">Son Kontrol: Güncelleniyor</p>
-                </div>
-                <span class="badge-patching">🔴 Bakımda</span>
-            </div>
+        <div class="status-grid" id="statusGrid">
+            <!-- Durumlar dinamik yüklenecek -->
         </div>
     </div>
 
@@ -64,12 +52,37 @@
         window.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('hub_theme');
             if (savedTheme) document.body.className = savedTheme;
+            loadStatuses();
         });
+
         function setTheme(themeClass) {
             document.body.className = themeClass;
             localStorage.setItem('hub_theme', themeClass);
         }
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
+
+        function loadStatuses() {
+            const grid = document.getElementById('statusGrid');
+            let statuses = JSON.parse(localStorage.getItem('hub_admin_status')) || [
+                { name: "Lumber Tycoon 2 Hub", state: "Çalışıyor" },
+                { name: "Murder Mystery 2", state: "Bakımda" }
+            ];
+
+            grid.innerHTML = "";
+            statuses.forEach(st => {
+                let badgeClass = st.state === "Çalışıyor" ? "badge-working" : "badge-patching";
+                let badgeText = st.state === "Çalışıyor" ? "🟢 Çalışıyor" : "🔴 Bakımda";
+                grid.innerHTML += `
+                    <div class="status-card">
+                        <div>
+                            <h3>${st.name}</h3>
+                            <p style="font-size: 13px; margin: 5px 0 0 0;">Anlık Durum Kontrolü</p>
+                        </div>
+                        <span class="${badgeClass}">${badgeText}</span>
+                    </div>
+                `;
+            });
+        }
     </script>
 </body>
 </html>
