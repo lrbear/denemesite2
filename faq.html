@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sık Sorulan Sorular - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
@@ -45,11 +44,11 @@
         <div class="faq-container">
             <div class="faq-card" onclick="toggleFaq(this)">
                 <div class="faq-question">🔑 Key sistemi nasıl çalışır ve ne kadar geçerlidir? <span>▼</span></div>
-                <div class="faq-answer">Key almak için "Key Sistemi" sayfasına gidip Linkvertise adımlarını tamamlamalısınız. Doğrulama yapıldıktan sonra key'iniz tarayıcınıza kaydedilir ve scriptlere sorunsuz erişim sağlarsınız.</div>
+                <div class="faq-answer">Key almak için "Key Sistemi" sayfasına gidip adımları tamamlamalısınız. Doğrulama yapıldıktan sonra key'iniz tarayıcınıza kaydedilir ve scriptlere sorunsuz erişim sağlarsınız.</div>
             </div>
             <div class="faq-card" onclick="toggleFaq(this)">
                 <div class="faq-question">⚠️ Script çalışmıyor veya hata veriyor, ne yapmalıyım? <span>▼</span></div>
-                <div class="faq-answer">Oyun güncellendiğinde scriptler "Patch" (fix) yiyebilir. Scriptler sayfasındaki rozetleri kontrol edebilir veya çalışmayan scriptler için bize bildirim gönderebilirsiniz.</div>
+                <div class="faq-answer">Oyun güncellendiğinde scriptler "Patch" (fix) yiyebilir. Scriptler sayfasından çalışmayan scriptler için "Patlak Bildir" butonunu kullanarak yöneticiye haber verebilirsiniz.</div>
             </div>
             <div class="faq-card" onclick="toggleFaq(this)">
                 <div class="faq-question">💻 Hangi Executor'ları kullanmalıyım? <span>▼</span></div>
@@ -80,10 +79,7 @@
             });
         });
 
-        function toggleFaq(card) {
-            card.classList.toggle('active');
-        }
-
+        function toggleFaq(card) { card.classList.toggle('active'); }
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
     </script>
 </body>
