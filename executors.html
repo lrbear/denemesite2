@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executor Rehberi - Klakz Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        .exec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; width: 100%; max-width: 900px; margin-bottom: 40px; }
+        .exec-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 25px; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; }
+    </style>
+</head>
+<body>
+
+    <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
+
+    <header>
+        <div class="logo">KLAKZ HUB</div>
+        <div class="hamburger" onclick="toggleMenu()">☰</div>
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="script.html">Scriptler</a>
+            <a href="status.html">Durum</a>
+            <a href="executors.html" class="active">Executor Rehberi</a>
+            <a href="network.html">Projelerim</a>
+            <a href="key.html">Key Sistemi</a>
+            <a href="changelog.html">Güncellemeler</a>
+            <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
+        </nav>
+    </header>
+
+    <div class="container" style="justify-content: flex-start;">
+        <h1 style="font-size: 36px; margin-top: 20px;">Executor <span>Durumları</span></h1>
+        <p style="margin-bottom: 30px; color: var(--text-muted);">Roblox için popüler executor'ların anlık çalışma durumları ve platform bilgileri.</p>
+
+        <div class="exec-grid">
+            <div class="exec-card">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 style="color:#fff; font-size: 20px;">Delta Executor</h3>
+                        <span style="color: #10b981; font-size: 12px; background: rgba(16,185,129,0.15); padding: 4px 8px; border-radius: 6px;">🟢 Çalışıyor</span>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Platform: Mobil (Android) & PC Emulator</p>
+                </div>
+                <a href="#" target="_blank" class="btn" style="justify-content: center; font-size: 13px;">Resmi Siteye Git</a>
+            </div>
+
+            <div class="exec-card">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 style="color:#fff; font-size: 20px;">Fluxus</h3>
+                        <span style="color: #10b981; font-size: 12px; background: rgba(16,185,129,0.15); padding: 4px 8px; border-radius: 6px;">🟢 Çalışıyor</span>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Platform: Mobil & PC</p>
+                </div>
+                <a href="#" target="_blank" class="btn" style="justify-content: center; font-size: 13px;">Resmi Siteye Git</a>
+            </div>
+
+            <div class="exec-card">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 style="color:#fff; font-size: 20px;">Hydrogen</h3>
+                        <span style="color: #f59e0b; font-size: 12px; background: rgba(245,158,11,0.15); padding: 4px 8px; border-radius: 6px;">🟡 Güncelleniyor</span>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Platform: Mobil (iOS/Android)</p>
+                </div>
+                <a href="#" target="_blank" class="btn" style="justify-content: center; font-size: 13px;">Resmi Siteye Git</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">Bildirim mesajı</div>
+    <footer><p>&copy; 2026 Klakz Hub. Tüm hakları saklıdır.</p></footer>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJuMNSxWFuNTO0xGriUo8QoaC9g-ie8WM",
+            authDomain: "klakz-database.firebaseapp.com",
+            databaseURL: "https://klakz-database-default-rtdb.firebaseio.com",
+            projectId: "klakz-database",
+            storageBucket: "klakz-database.firebasestorage.app",
+            messagingSenderId: "437747915577",
+            appId: "1:437747915577:web:f4ffa2f76d6d7a923966e8"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        window.addEventListener('DOMContentLoaded', () => {
+            db.ref('announcement').on('value', snap => {
+                document.getElementById('topAnnouncement').textContent = snap.val() || "";
+            });
+        });
+
+        function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
+    </script>
+</body>
+</html>
