@@ -8,7 +8,7 @@
 </head>
 <body>
 
-    <div class="announcement-bar" id="topAnnouncement">🔥 v3.1 Güncellemesi Yayında!</div>
+    <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
     <header>
         <div class="logo">HUB SYSTEM</div>
@@ -47,15 +47,18 @@
     </footer>
 
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             const savedTheme = localStorage.getItem('hub_theme');
             if (savedTheme) document.body.className = savedTheme;
 
-            // Duyuruyu yükle
-            let savedAnn = localStorage.getItem('hub_announcement');
-            if(savedAnn) document.getElementById('topAnnouncement').textContent = savedAnn;
+            try {
+                let res = await fetch('scripts.json?' + new Date().getTime());
+                let data = await res.json();
+                document.getElementById('topAnnouncement').textContent = data.announcement;
+            } catch(e) {
+                document.getElementById('topAnnouncement').textContent = "🔥 v3.2 Güncellemesi Yayında!";
+            }
 
-            // Ziyaretçi sayacı
             let visits = parseInt(localStorage.getItem('hub_visitor_count') || 104);
             if(!sessionStorage.getItem('visited_session')) {
                 visits += 1;
