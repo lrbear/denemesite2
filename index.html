@@ -3,15 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ana Sayfa - Hub</title>
+    <title>Ana Sayfa - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        .hero { text-align: center; max-width: 800px; padding: 40px 20px; }
+        .hero h1 { font-size: 48px; margin-bottom: 20px; font-weight: 800; letter-spacing: -1px; }
+        .hero h1 span { background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { color: var(--text-muted); font-size: 18px; margin-bottom: 30px; line-height: 1.6; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; width: 100%; max-width: 800px; margin-top: 40px; }
+        .stat-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 25px; border-radius: 16px; text-align: center; transition: 0.3s; }
+        .stat-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .stat-number { font-size: 28px; font-weight: 700; color: #fff; margin-top: 5px; }
+    </style>
 </head>
 <body>
 
     <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
     <header>
-        <div class="logo">HUB SYSTEM</div>
+        <div class="logo">KLAKZ HUB</div>
         <div class="hamburger" onclick="toggleMenu()">☰</div>
         <nav>
             <a href="index.html" class="active">Ana Sayfa</a>
@@ -20,58 +33,78 @@
             <a href="network.html">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
             <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
-            <div class="theme-picker">
-                <div class="theme-dot" style="background:#6366f1;" onclick="setTheme('')" title="Mor Tema"></div>
-                <div class="theme-dot" style="background:#10b981;" onclick="setTheme('theme-green')" title="Yeşil Tema"></div>
-                <div class="theme-dot" style="background:#ef4444;" onclick="setTheme('theme-red')" title="Kırmızı Tema"></div>
-            </div>
         </nav>
     </header>
 
     <div class="container">
-        <h1>Geleceğin Script Deneyimiyle <span>Tanışın</span></h1>
-        <p>Yüksek performanslı scriptler, güvenli key doğrulama altyapısı ve kesintisiz deneyim tek bir yerde toplandı.</p>
-        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-bottom: 30px;">
-            <a href="script.html" class="btn">🚀 Scriptleri Keşfet</a>
-            <a href="key.html" class="btn btn-secondary">🔑 Key Al / Doğrula</a>
+        <div class="hero">
+            <h1>Roblox Deneyimini <span>Zirveye Taşı</span></h1>
+            <p>Klakz Hub; en güncel scriptler, kesintisiz sunucu durumu takibi ve özel araçlarıyla seninle. Güvenli, hızlı ve modern arayüz.</p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <a href="script.html" class="btn">🚀 Scriptlere Git</a>
+                <a href="key.html" class="btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border);">🔑 Key Al</a>
+            </div>
         </div>
-        <div style="font-size: 13px; color: var(--text-muted); background: var(--card-bg); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border);">
-            👁️ Toplam Ziyaret: <span id="visitorCount" style="color: var(--primary); font-weight: bold;">1</span>
+
+        <!-- İSTATİSTİKLER -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p style="color: var(--text-muted); font-size: 13px;">Toplam Ziyaret</p>
+                <div class="stat-number" id="visitorCount">Yükleniyor...</div>
+            </div>
+            <div class="stat-card">
+                <p style="color: var(--text-muted); font-size: 13px;">Aktif Script</p>
+                <div class="stat-number" id="scriptCount">Yükleniyor...</div>
+            </div>
         </div>
     </div>
 
     <div id="toast">Bildirim mesajı</div>
-    <footer>
-        <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
-        <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord Topluluğumuz</a>
-    </footer>
+    <footer><p>&copy; 2026 Klakz Hub. Tüm hakları saklıdır.</p></footer>
 
     <script>
-        window.addEventListener('DOMContentLoaded', async () => {
-            const savedTheme = localStorage.getItem('hub_theme');
-            if (savedTheme) document.body.className = savedTheme;
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJuMNSxWFuNTO0xGriUo8QoaC9g-ie8WM",
+            authDomain: "klakz-database.firebaseapp.com",
+            databaseURL: "https://klakz-database-default-rtdb.firebaseio.com",
+            projectId: "klakz-database",
+            storageBucket: "klakz-database.firebasestorage.app",
+            messagingSenderId: "437747915577",
+            appId: "1:437747915577:web:f4ffa2f76d6d7a923966e8"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-            try {
-                let res = await fetch('scripts.json?' + new Date().getTime());
-                let data = await res.json();
-                document.getElementById('topAnnouncement').textContent = data.announcement;
-            } catch(e) {
-                document.getElementById('topAnnouncement').textContent = "🔥 v3.2 Güncellemesi Yayında!";
+        window.addEventListener('DOMContentLoaded', () => {
+            // Duyuru Dinleyicisi
+            db.ref('announcement').on('value', snap => {
+                document.getElementById('topAnnouncement').textContent = snap.val() || "";
+            });
+
+            // ZİYARETÇİ SAYACI DÜZELTMESİ (Oturum Başına 1 Kez Artar)
+            const visitorRef = db.ref('stats/totalVisitors');
+            
+            if (!sessionStorage.getItem("visited_this_session")) {
+                sessionStorage.setItem("visited_this_session", "true");
+                // Transaction kullanarak güvenli artış (çakışmaları önler)
+                visitorRef.transaction(currentVisitors => {
+                    return (currentVisitors || 0) + 1;
+                });
             }
 
-            let visits = parseInt(localStorage.getItem('hub_visitor_count') || 104);
-            if(!sessionStorage.getItem('visited_session')) {
-                visits += 1;
-                localStorage.setItem('hub_visitor_count', visits);
-                sessionStorage.setItem('visited_session', 'true');
-            }
-            document.getElementById('visitorCount').textContent = visits;
+            // Ziyaretçi Sayısını Ekranda Göster
+            visitorRef.on('value', snap => {
+                document.getElementById('visitorCount').textContent = snap.val() || 0;
+            });
+
+            // Aktif Script Sayısını Göster
+            db.ref('scripts').on('value', snap => {
+                let data = snap.val();
+                let count = data ? Object.keys(data).length : 0;
+                document.getElementById('scriptCount').textContent = count;
+            });
         });
 
-        function setTheme(themeClass) {
-            document.body.className = themeClass;
-            localStorage.setItem('hub_theme', themeClass);
-        }
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
     </script>
 </body>
