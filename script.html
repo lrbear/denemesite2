@@ -3,19 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scriptler - Hub</title>
+    <title>Scriptler - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        .search-bar { width: 100%; max-width: 500px; padding: 14px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 15px; margin-bottom: 30px; outline: none; transition: 0.3s; }
-        .search-bar:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
-        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; margin-bottom: 40px; }
-        .card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 25px; border-radius: 16px; text-align: left; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; }
-        .card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-        .card h3 { margin-bottom: 8px; color: #fff; font-size: 20px; }
-        .card p { font-size: 14px; margin-bottom: 15px; color: var(--text-muted); }
-        .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 15px; }
-        .tag { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); color: #a5b4fc; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
-        .stats-badge { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; display: inline-block; }
+        .script-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 900px; margin-bottom: 40px; }
+        .script-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 25px; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.3s; }
+        .script-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2); }
+        .tag { background: rgba(99, 102, 241, 0.15); color: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; margin-bottom: 12px; }
     </style>
 </head>
 <body>
@@ -23,7 +20,7 @@
     <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
     <header>
-        <div class="logo">HUB SYSTEM</div>
+        <div class="logo">KLAKZ HUB</div>
         <div class="hamburger" onclick="toggleMenu()">☰</div>
         <nav>
             <a href="index.html">Ana Sayfa</a>
@@ -32,103 +29,103 @@
             <a href="network.html">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
             <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
-            <div class="theme-picker">
-                <div class="theme-dot" style="background:#6366f1;" onclick="setTheme('')"></div>
-                <div class="theme-dot" style="background:#10b981;" onclick="setTheme('theme-green')"></div>
-                <div class="theme-dot" style="background:#ef4444;" onclick="setTheme('theme-red')"></div>
-            </div>
         </nav>
     </header>
 
     <div class="container" style="justify-content: flex-start;">
-        <h1 style="font-size: 36px; margin-top: 20px;">Script <span>Kütüphanesi</span></h1>
-        <p>Arama çubuğunu kullanarak scriptleri filtreleyebilir ve anında kopyalayabilirsin.</p>
-        
-        <input type="text" id="searchInput" class="search-bar" placeholder="Script ara..." onkeyup="filterScripts()">
+        <h1 style="font-size: 36px; margin-top: 20px;">Özel <span>Scriptler</span></h1>
+        <p style="margin-bottom: 30px;">Admin panelinden eklenen en güncel scriptlere buradan ulaşabilirsin.</p>
 
-        <div class="card-grid" id="scriptGrid"></div>
+        <div class="script-grid" id="scriptGrid"></div>
     </div>
 
     <div id="toast">Bildirim mesajı</div>
-    <footer>
-        <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
-        <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord</a>
-    </footer>
+    <footer><p>&copy; 2026 Klakz Hub. Tüm hakları saklıdır.</p></footer>
 
     <script>
-        let globalScripts = [];
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJuMNSxWFuNTO0xGriUo8QoaC9g-ie8WM",
+            authDomain: "klakz-database.firebaseapp.com",
+            databaseURL: "https://klakz-database-default-rtdb.firebaseio.com",
+            projectId: "klakz-database",
+            storageBucket: "klakz-database.firebasestorage.app",
+            messagingSenderId: "437747915577",
+            appId: "1:437747915577:web:f4ffa2f76d6d7a923966e8"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            const savedTheme = localStorage.getItem('hub_theme');
-            if (savedTheme) document.body.className = savedTheme;
-            
-            await loadScriptsFromJSON();
+        window.addEventListener('DOMContentLoaded', () => {
+            db.ref('announcement').on('value', snap => {
+                document.getElementById('topAnnouncement').textContent = snap.val() || "";
+            });
+
+            db.ref('scripts').on('value', snap => {
+                let data = snap.val();
+                let scriptsArray = data ? Object.keys(data).map(key => data[key]) : [];
+                renderScripts(scriptsArray);
+            });
         });
 
-        function setTheme(themeClass) {
-            document.body.className = themeClass;
-            localStorage.setItem('hub_theme', themeClass);
+        function renderScripts(scripts) {
+            const grid = document.getElementById('scriptGrid');
+            grid.innerHTML = "";
+            if(scripts.length === 0) {
+                grid.innerHTML = "<p style='color:var(--text-muted);'>Henüz eklenmiş script bulunmuyor.</p>";
+                return;
+            }
+
+            scripts.forEach((item, index) => {
+                let btnId = "copyBtn_" + index;
+                let encodedCode = encodeURIComponent(item.code);
+
+                grid.innerHTML += `
+                    <div class="script-card">
+                        <div>
+                            <span class="tag">${item.tag}</span>
+                            <h3 style="color:#fff; font-size:20px; margin-bottom:8px;">${item.name}</h3>
+                            <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">${item.desc || 'Açıklama girilmemiş.'}</p>
+                        </div>
+                        <button id="${btnId}" class="btn" style="width:100%; justify-content:center;" onclick="copyScript('${encodedCode}', '${btnId}')">📋 Kopyala</button>
+                    </div>
+                `;
+            });
         }
+
+        // COOLDOWN SİSTEMİ (5 Saniye)
+        function copyScript(encodedCode, btnId) {
+            let code = decodeURIComponent(encodedCode);
+            navigator.clipboard.writeText(code).then(() => {
+                showToast("📋 Script panoya kopyalandı!");
+                
+                let btn = document.getElementById(btnId);
+                let timeLeft = 5;
+                
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+                btn.style.cursor = "not-allowed";
+                
+                let timer = setInterval(() => {
+                    btn.textContent = `⏳ Bekleyin (${timeLeft}s)`;
+                    timeLeft--;
+                    
+                    if(timeLeft < 0) {
+                        clearInterval(timer);
+                        btn.disabled = false;
+                        btn.style.opacity = "1";
+                        btn.style.cursor = "pointer";
+                        btn.textContent = "📋 Kopyala";
+                    }
+                }, 1000);
+            });
+        }
+
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 3000);
-        }
-
-        async function loadScriptsFromJSON() {
-            try {
-                let res = await fetch('scripts.json?' + new Date().getTime());
-                let data = await res.json();
-                document.getElementById('topAnnouncement').textContent = data.announcement;
-                globalScripts = data.scripts || [];
-                renderGrid(globalScripts);
-            } catch(e) {
-                showToast("⚠ Scriptler yüklenirken hata oluştu!");
-            }
-        }
-
-        function renderGrid(scripts) {
-            const grid = document.getElementById('scriptGrid');
-            grid.innerHTML = "";
-            if(scripts.length === 0) {
-                grid.innerHTML = "<p style='color:var(--text-muted);'>Hiç script bulunamadı.</p>";
-                return;
-            }
-            scripts.forEach(s => {
-                let count = localStorage.getItem(`script_count_${s.id}`) || s.count || 0;
-                grid.innerHTML += `
-                    <div class="card" data-name="${s.name.toLowerCase()} ${s.desc.toLowerCase()}">
-                        <div>
-                            <h3>${s.name}</h3>
-                            <p>${s.desc}</p>
-                            <div class="tags"><span class="tag">${s.tag}</span></div>
-                            <span class="stats-badge" id="stat-${s.id}">📥 Kopyalanma: ${count}</span>
-                        </div>
-                        <button class="btn" onclick="copyScript('${s.code}', ${s.id})">📋 Scripti Kopyala</button>
-                    </div>
-                `;
-            });
-        }
-
-        function copyScript(code, id) {
-            navigator.clipboard.writeText(code);
-            showToast("✨ Script panoya kopyalandı!");
-            
-            let currentCount = parseInt(localStorage.getItem(`script_count_${id}`) || 0) + 1;
-            localStorage.setItem(`script_count_${id}`, currentCount);
-            let statEl = document.getElementById(`stat-${id}`);
-            if(statEl) statEl.textContent = `📥 Kopyalanma: ${currentCount}`;
-        }
-
-        function filterScripts() {
-            let input = document.getElementById('searchInput').value.toLowerCase();
-            let cards = document.getElementsByClassName('card');
-            for (let i = 0; i < cards.length; i++) {
-                let name = cards[i].getAttribute('data-name');
-                cards[i].style.display = name.includes(input) ? "flex" : "none";
-            }
         }
     </script>
 </body>
