@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Paneli - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDK (Compat) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
@@ -38,7 +38,7 @@
         <!-- GİRİŞ EKRANI -->
         <div id="loginScreen" class="admin-box" style="max-width: 400px; text-align: center; margin-top: 50px;">
             <h1 style="font-size: 26px; margin-bottom: 10px;">Admin <span>Girişi</span></h1>
-            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">İlk girişte şifreniz otomatik olarak: <b>admin123</b> yapılır.</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">İlk girişte şifreniz: <b>admin123</b></p>
             <input type="password" id="adminPass" class="form-control" placeholder="Admin şifresi..." style="text-align: center; margin-bottom: 15px;">
             <button class="btn" style="width: 100%; justify-content: center;" onclick="checkLogin()">Giriş Yap</button>
         </div>
@@ -53,6 +53,7 @@
                 
                 <div class="form-group"><label>Üst Şerit Duyuru Metni</label><input type="text" id="announcementInput" class="form-control"></div>
                 <div class="form-group"><label>Discord Webhook URL</label><input type="text" id="webhookInput" class="form-control" placeholder="https://discord.com/api/webhooks/..."></div>
+                <div class="form-group"><label>Aktif Key Sistemi Şifresi</label><input type="text" id="keyInput" class="form-control" placeholder="klakz2026"></div>
                 <button class="btn" style="width: 100%; justify-content: center;" onclick="saveSettings()">✨ Ayarları Kaydet</button>
             </div>
 
@@ -79,7 +80,7 @@
                 <div class="form-group"><label>Açıklama</label><input type="text" id="scriptDesc" class="form-control" placeholder="Otomatik farm..."></div>
                 <div class="form-group"><label>Etiket</label><input type="text" id="scriptTag" class="form-control" placeholder="Delta, Fluxus"></div>
                 <div class="form-group"><label>Kod</label><input type="text" id="scriptCode" class="form-control" placeholder="loadstring(...)()"></div>
-                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 20px;" onclick="addScript()">🚀 Script Ekle</button>
+                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 20px;" onclick="addScript()">🚀 Script Ekle (Discord'a Bildir)</button>
                 <div id="adminScriptList"></div>
             </div>
         </div>
@@ -103,9 +104,10 @@
 
         window.onload = function() {
             db.ref('adminPassword').once('value').then(snap => {
-                if(!snap.exists()) {
-                    db.ref('adminPassword').set("admin123");
-                }
+                if(!snap.exists()) db.ref('adminPassword').set("admin123");
+            });
+            db.ref('validKey').once('value').then(snap => {
+                if(!snap.exists()) db.ref('validKey').set("klakz2026");
             });
 
             db.ref('announcement').on('value', snap => {
@@ -114,6 +116,9 @@
             });
             db.ref('webhookUrl').on('value', snap => {
                 document.getElementById('webhookInput').value = snap.val() || "";
+            });
+            db.ref('validKey').on('value', snap => {
+                document.getElementById('keyInput').value = snap.val() || "";
             });
 
             if(localStorage.getItem("hub_admin_logged") === "true") {
@@ -146,6 +151,7 @@
         function saveSettings() {
             db.ref('announcement').set(document.getElementById("announcementInput").value.trim());
             db.ref('webhookUrl').set(document.getElementById("webhookInput").value.trim());
+            db.ref('validKey').set(document.getElementById("keyInput").value.trim());
             showToast("✨ Ayarlar kaydedildi!");
         }
 
@@ -178,12 +184,33 @@
             let tag = document.getElementById("scriptTag").value.trim();
             let code = document.getElementById("scriptCode").value.trim();
             if(!name || !code) { showToast("⚠ Ad ve Kod zorunludur!"); return; }
+
             db.ref('scripts').push({ name, desc, tag: tag || "Genel", code }).then(() => {
+                // Discord Webhook Gönderimi
+                db.ref('webhookUrl').once('value').then(snap => {
+                    let webhookUrl = snap.val();
+                    if(webhookUrl) {
+                        fetch(webhookUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                content: "🚨 **Klakz Hub'a Yeni Script Eklendi!**",
+                                embeds: [{
+                                    title: name,
+                                    description: desc || "Açıklama yok.",
+                                    color: 65280,
+                                    fields: [{ name: "Etiket", value: tag || "Genel", inline: true }]
+                                }]
+                            })
+                        }).catch(err => console.log("Webhook gönderilemedi:", err));
+                    }
+                });
+
                 document.getElementById("scriptName").value = "";
                 document.getElementById("scriptDesc").value = "";
                 document.getElementById("scriptTag").value = "";
                 document.getElementById("scriptCode").value = "";
-                showToast("✨ Script eklendi!");
+                showToast("🚀 Script eklendi ve Discord'a bildirildi!");
             });
         }
         function deleteScript(id) { db.ref('scripts/' + id).remove().then(() => showToast("🗑 Script silindi!")); }
