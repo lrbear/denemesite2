@@ -6,40 +6,63 @@
     <title>Scriptler - Hub</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+        .search-bar {
             width: 100%;
-            max-width: 900px;
-            margin-top: 20px;
-        }
-        .card {
-            background: #181922;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 25px;
+            max-width: 500px;
+            padding: 14px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
             border-radius: 12px;
-            text-align: left;
+            color: white;
+            font-size: 15px;
+            margin-bottom: 30px;
+            outline: none;
             transition: 0.3s;
         }
+        .search-bar:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 16px;
+            text-align: left;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
         .card:hover {
-            border-color: #5865F2;
+            border-color: var(--primary);
             transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         }
         .card h3 {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #fff;
+            font-size: 20px;
         }
         .card p {
             font-size: 14px;
             margin-bottom: 20px;
+            color: var(--text-muted);
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">Hub v2.0</div>
+        <div class="logo">HUB SYSTEM</div>
         <nav>
             <a href="index.html">Ana Sayfa</a>
             <a href="script.html" class="active">Scriptler</a>
@@ -48,31 +71,62 @@
     </header>
 
     <div class="container" style="justify-content: flex-start;">
-        <h1>Script Listesi</h1>
-        <p>Kullanıma hazır popüler oyun scriptlerimiz.</p>
+        <h1 style="font-size: 36px; margin-top: 20px;">Script <span>Kütüphanesi</span></h1>
+        <p>Aşağıdaki arama çubuğunu kullanarak dilediğin scripti bulabilir ve tek tıkla kopyalayabilirsin.</p>
         
-        <div class="card-grid">
-            <div class="card">
-                <h3>Oyun Scripti #1</h3>
-                <p>Gelişmiş özellikler, hızlı farm ve ESP desteği içerir.</p>
-                <button class="btn" onclick="copyScript('loadstring(game:HttpGet(\'BURAYA_SCRIPT_1\'))()')">Scripti Kopyala</button>
+        <input type="text" id="searchInput" class="search-bar" placeholder="Script ara (Örn: Lumber Tycoon, Farm)..." onkeyup="filterScripts()">
+
+        <div class="card-grid" id="scriptGrid">
+            <div class="card" data-name="lumber tycoon 2 farm esp">
+                <div>
+                    <h3>Lumber Tycoon 2 Hub</h3>
+                    <p>Otomatik kesim, sınırsız para, hızlı ışınlanma ve ESP özellikleri barındırır.</p>
+                </div>
+                <button class="btn" onclick="copyScript('loadstring(game:HttpGet(\'BURAYA_SCRIPT_1\'))()')">📋 Scripti Kopyala</button>
             </div>
-            <div class="card">
-                <h3>Oyun Scripti #2</h3>
-                <p>Özel arayüz ve optimize edilmiş performans.</p>
-                <button class="btn" onclick="copyScript('loadstring(game:HttpGet(\'BURAYA_SCRIPT_2\'))()')">Scripti Kopyala</button>
+            
+            <div class="card" data-name="murder mystery 2 mm2 aimbot">
+                <div>
+                    <h3>Murder Mystery 2 Script</h3>
+                    <p>Tüm rolleri görme (Sheriff/Murderer ESP), hız hilesi ve otomatik toplama.</p>
+                </div>
+                <button class="btn" onclick="copyScript('loadstring(game:HttpGet(\'BURAYA_SCRIPT_2\'))()')">📋 Scripti Kopyala</button>
             </div>
         </div>
     </div>
 
+    <div id="toast">Script başarıyla kopyalandı!</div>
     <footer>
-        <p>&copy; 2026 Tüm Hakları Saklıdır.</p>
+        <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
     </footer>
 
     <script>
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
         function copyScript(code) {
             navigator.clipboard.writeText(code);
-            alert("Script başarıyla kopyalandı!");
+            showToast("✨ Script panoya kopyalandı!");
+        }
+
+        function filterScripts() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            let cards = document.getElementsByClassName('card');
+            
+            for (let i = 0; i < cards.length; i++) {
+                let name = cards[i].getAttribute('data-name');
+                if (name.includes(input)) {
+                    cards[i].style.display = "flex";
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
         }
     </script>
 
