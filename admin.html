@@ -16,7 +16,7 @@
 </head>
 <body>
 
-    <div class="announcement-bar" id="topAnnouncement">🔥 v3.1 Güncellemesi Yayında!</div>
+    <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
     <header>
         <div class="logo">HUB SYSTEM</div>
@@ -41,24 +41,33 @@
         <div id="loginScreen" class="admin-box" style="max-width: 400px; text-align: center; margin-top: 50px;">
             <h1 style="font-size: 26px; margin-bottom: 10px;">Admin <span>Girişi</span></h1>
             <p style="font-size: 13px; margin-bottom: 20px;">Yönetim paneline erişmek için şifrenizi girin.</p>
-            <input type="password" id="adminPass" class="form-control" placeholder="Admin şifresi (admin123)..." style="text-align: center; margin-bottom: 15px;">
+            <input type="password" id="adminPass" class="form-control" placeholder="Admin şifresi..." style="text-align: center; margin-bottom: 15px;">
             <button class="btn" style="width: 100%; justify-content: center;" onclick="checkLogin()">Giriş Yap</button>
         </div>
 
         <!-- PANEL EKRANI -->
         <div id="adminPanel" style="display: none; width: 100%; max-width: 600px;">
             
-            <!-- DUYURU YÖNETİMİ -->
+            <!-- DUYURU & ŞİFRE & WEBHOOK -->
             <div class="admin-box">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h1 style="font-size: 22px; margin: 0;">📢 Duyuru <span>Yönetimi</span></h1>
+                    <h1 style="font-size: 22px; margin: 0;">🛠️ Panel <span>Ayarları</span></h1>
                     <button class="btn btn-danger" style="padding: 6px 12px; font-size: 11px;" onclick="logout()">Çıkış Yap</button>
                 </div>
+                
                 <div class="form-group">
                     <label>Üst Şerit Duyuru Metni</label>
-                    <input type="text" id="announcementInput" class="form-control" placeholder="Örn: 🔥 v3.1 Güncellemesi Yayında!">
+                    <input type="text" id="announcementInput" class="form-control">
                 </div>
-                <button class="btn" style="width: 100%; justify-content: center;" onclick="updateAnnouncement()">✨ Duyuruyu Güncelle</button>
+                <div class="form-group">
+                    <label>Discord Webhook URL (Bildirimler İçin)</label>
+                    <input type="text" id="webhookInput" class="form-control" placeholder="https://discord.com/api/webhooks/...">
+                </div>
+                <div class="form-group">
+                    <label>Yeni Admin Şifresi</label>
+                    <input type="password" id="newPassInput" class="form-control" placeholder="Boş bırakırsanız değişmez">
+                </div>
+                <button class="btn" style="width: 100%; justify-content: center;" onclick="saveSettings()">✨ Ayarları Kaydet ve JSON Ver</button>
             </div>
 
             <!-- SCRIPT EKLEME & YÖNETME -->
@@ -67,12 +76,12 @@
                 
                 <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--primary);">➕ Yeni Script Ekle</h3>
                 <div class="form-group">
-                    <label>Script Adı (Oyun/Hub)</label>
+                    <label>Script Adı</label>
                     <input type="text" id="scriptName" class="form-control" placeholder="Örn: Blox Fruits Hub">
                 </div>
                 <div class="form-group">
                     <label>Açıklama</label>
-                    <input type="text" id="scriptDesc" class="form-control" placeholder="Örn: Otomatik farm, fruit sniper...">
+                    <input type="text" id="scriptDesc" class="form-control" placeholder="Örn: Otomatik farm...">
                 </div>
                 <div class="form-group">
                     <label>Executor Etiketleri</label>
@@ -80,9 +89,9 @@
                 </div>
                 <div class="form-group">
                     <label>Loadstring Kodu</label>
-                    <input type="text" id="scriptCode" class="form-control" placeholder="loadstring(game:HttpGet('...'))()">
+                    <input type="text" id="scriptCode" class="form-control" placeholder="loadstring(...)()">
                 </div>
-                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 30px;" onclick="addScript()">🚀 Scripti Yayınla</button>
+                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 30px;" onclick="addScript()">🚀 Scripti Ekle & İndir</button>
 
                 <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--primary);">📋 Mevcut Scriptleri Sil</h3>
                 <div id="adminScriptList"></div>
@@ -98,14 +107,20 @@
     </footer>
 
     <script>
-        window.onload = function() {
+        let serverData = { announcement: "", adminPassword: "admin123", webhookUrl: "", scripts: [], statuses: [] };
+
+        window.onload = async function() {
             const savedTheme = localStorage.getItem('hub_theme');
             if (savedTheme) document.body.className = savedTheme;
 
-            let savedAnn = localStorage.getItem('hub_announcement');
-            if(savedAnn) {
-                document.getElementById('topAnnouncement').textContent = savedAnn;
-                document.getElementById('announcementInput').value = savedAnn;
+            try {
+                let res = await fetch('scripts.json?' + new Date().getTime());
+                serverData = await res.json();
+                document.getElementById('topAnnouncement').textContent = serverData.announcement;
+                document.getElementById('announcementInput').value = serverData.announcement;
+                document.getElementById('webhookInput').value = serverData.webhookUrl || "";
+            } catch(e) {
+                console.log("JSON yüklenemedi");
             }
 
             if(localStorage.getItem("hub_admin_logged") === "true") {
@@ -129,7 +144,8 @@
 
         function checkLogin() {
             const pass = document.getElementById("adminPass").value;
-            if(pass === "admin123") {
+            let correctPass = serverData.adminPassword || "admin123";
+            if(pass === correctPass) {
                 localStorage.setItem("hub_admin_logged", "true");
                 document.getElementById("loginScreen").style.display = "none";
                 document.getElementById("adminPanel").style.display = "block";
@@ -145,22 +161,40 @@
             location.reload();
         }
 
-        function updateAnnouncement() {
-            let text = document.getElementById("announcementInput").value.trim();
-            if(!text) {
-                showToast("⚠ Duyuru boş olamaz!");
-                return;
-            }
-            localStorage.setItem('hub_announcement', text);
-            document.getElementById('topAnnouncement').textContent = text;
-            showToast("📢 Duyuru güncellendi!");
+        // JSON dosyasını tarayıcı üzerinden otomatik indirerek GitHub'a atmanı sağlar
+        function downloadJSON() {
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(serverData, null, 4));
+            let downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "scripts.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
         }
 
-        function getScripts() {
-            return JSON.parse(localStorage.getItem('hub_admin_scripts')) || [
-                { id: 1, name: "Lumber Tycoon 2 Hub", desc: "Otomatik kesim, sınırsız para, hızlı ışınlanma ve ESP özellikleri.", tag: "Delta, Synapse Z", code: "loadstring(game:HttpGet('BURAYA_SCRIPT_1\'))()", count: 0 },
-                { id: 2, name: "Murder Mystery 2 Script", desc: "Rolleri görme (ESP), hız hilesi ve otomatik toplama menüsü.", tag: "Delta, Fluxus", code: "loadstring(game:HttpGet('BURAYA_SCRIPT_2\'))()", count: 0 }
-            ];
+        async function sendDiscordWebhook(content) {
+            let url = serverData.webhookUrl;
+            if(!url) return;
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: content })
+                });
+            } catch(e) { console.log("Webhook atılamadı"); }
+        }
+
+        function saveSettings() {
+            let ann = document.getElementById("announcementInput").value.trim();
+            let web = document.getElementById("webhookInput").value.trim();
+            let newP = document.getElementById("newPassInput").value.trim();
+
+            if(ann) serverData.announcement = ann;
+            serverData.webhookUrl = web;
+            if(newP) serverData.adminPassword = newP;
+
+            downloadJSON();
+            showToast("✨ Ayarlar kaydedildi! İndirilen 'scripts.json' dosyasını GitHub'a yükleyin.");
         }
 
         function addScript() {
@@ -174,15 +208,9 @@
                 return;
             }
 
-            let scripts = getScripts();
-            let newId = scripts.length > 0 ? scripts[scripts.length - 1].id + 1 : 1;
-            
-            scripts.push({ id: newId, name, desc, tag: tag || "Genel", code, count: 0 });
-            localStorage.setItem('hub_admin_scripts', JSON.stringify(scripts));
-
-            let statuses = JSON.parse(localStorage.getItem('hub_admin_status')) || [];
-            statuses.push({ name: name, state: "Çalışıyor" });
-            localStorage.setItem('hub_admin_status', JSON.stringify(statuses));
+            let newId = serverData.scripts.length > 0 ? serverData.scripts[serverData.scripts.length - 1].id + 1 : 1;
+            serverData.scripts.push({ id: newId, name, desc, tag: tag || "Genel", code, count: 0 });
+            serverData.statuses.push({ name: name, state: "Çalışıyor" });
 
             document.getElementById("scriptName").value = "";
             document.getElementById("scriptDesc").value = "";
@@ -190,28 +218,27 @@
             document.getElementById("scriptCode").value = "";
 
             renderAdminList();
-            showToast("✨ Script başarıyla eklendi ve yayınlandı!");
+            downloadJSON();
+            sendDiscordWebhook(`🚀 **Yeni Script Eklendi!**\n**İsim:** ${name}\n**Açıklama:** ${desc}`);
+            showToast("✨ Script eklendi! 'scripts.json' indirildi, GitHub'a atın.");
         }
 
         function deleteScript(id) {
-            let scripts = getScripts();
-            let filtered = scripts.filter(s => s.id !== id);
-            localStorage.setItem('hub_admin_scripts', JSON.stringify(filtered));
+            serverData.scripts = serverData.scripts.filter(s => s.id !== id);
             renderAdminList();
-            showToast("🗑 Script silindi!");
+            downloadJSON();
+            showToast("🗑 Script silindi! 'scripts.json' indirildi, GitHub'a atın.");
         }
 
         function renderAdminList() {
             let listContainer = document.getElementById("adminScriptList");
-            let scripts = getScripts();
-            
-            if(scripts.length === 0) {
+            if(serverData.scripts.length === 0) {
                 listContainer.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Henüz eklenmiş script yok.</p>";
                 return;
             }
 
             listContainer.innerHTML = "";
-            scripts.forEach(s => {
+            serverData.scripts.forEach(s => {
                 listContainer.innerHTML += `
                     <div class="script-list-item">
                         <div>
