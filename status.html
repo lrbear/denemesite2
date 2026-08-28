@@ -14,7 +14,7 @@
 </head>
 <body>
 
-    <div class="announcement-bar">🔥 v3.0 Güncellemesi Yayında! Canlı Admin Paneli Aktif.</div>
+    <div class="announcement-bar" id="topAnnouncement">🔥 v3.1 Güncellemesi Yayında!</div>
 
     <header>
         <div class="logo">HUB SYSTEM</div>
@@ -38,9 +38,7 @@
         <h1 style="font-size: 36px; margin-top: 20px;">Sistem <span>Durumu</span></h1>
         <p>Scriptlerimizin anlık çalışma durumunu buradan takip edebilirsin.</p>
 
-        <div class="status-grid" id="statusGrid">
-            <!-- Durumlar dinamik yüklenecek -->
-        </div>
+        <div class="status-grid" id="statusGrid"></div>
     </div>
 
     <footer>
@@ -52,6 +50,10 @@
         window.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('hub_theme');
             if (savedTheme) document.body.className = savedTheme;
+
+            let savedAnn = localStorage.getItem('hub_announcement');
+            if(savedAnn) document.getElementById('topAnnouncement').textContent = savedAnn;
+
             loadStatuses();
         });
 
