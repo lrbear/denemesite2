@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Paneli - Hub</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         .admin-box { background: var(--card-bg); backdrop-filter: blur(12px); padding: 35px; border-radius: 20px; border: 1px solid var(--border); max-width: 600px; width: 100%; text-align: left; box-shadow: 0 20px 40px rgba(0,0,0,0.5); margin-bottom: 30px; }
         .form-group { margin-bottom: 15px; }
@@ -28,11 +31,6 @@
             <a href="network.html">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
             <a href="admin.html" class="active" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
-            <div class="theme-picker">
-                <div class="theme-dot" style="background:#6366f1;" onclick="setTheme('')"></div>
-                <div class="theme-dot" style="background:#10b981;" onclick="setTheme('theme-green')"></div>
-                <div class="theme-dot" style="background:#ef4444;" onclick="setTheme('theme-red')"></div>
-            </div>
         </nav>
     </header>
 
@@ -40,15 +38,12 @@
         <!-- GİRİŞ EKRANI -->
         <div id="loginScreen" class="admin-box" style="max-width: 400px; text-align: center; margin-top: 50px;">
             <h1 style="font-size: 26px; margin-bottom: 10px;">Admin <span>Girişi</span></h1>
-            <p style="font-size: 13px; margin-bottom: 20px;">Yönetim paneline erişmek için şifrenizi girin.</p>
             <input type="password" id="adminPass" class="form-control" placeholder="Admin şifresi..." style="text-align: center; margin-bottom: 15px;">
             <button class="btn" style="width: 100%; justify-content: center;" onclick="checkLogin()">Giriş Yap</button>
         </div>
 
         <!-- PANEL EKRANI -->
         <div id="adminPanel" style="display: none; width: 100%; max-width: 600px;">
-            
-            <!-- DUYURU & ŞİFRE & WEBHOOK -->
             <div class="admin-box">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h1 style="font-size: 22px; margin: 0;">🛠️ Panel <span>Ayarları</span></h1>
@@ -60,195 +55,189 @@
                     <input type="text" id="announcementInput" class="form-control">
                 </div>
                 <div class="form-group">
-                    <label>Discord Webhook URL (Bildirimler İçin)</label>
+                    <label>Discord Webhook URL</label>
                     <input type="text" id="webhookInput" class="form-control" placeholder="https://discord.com/api/webhooks/...">
                 </div>
-                <div class="form-group">
-                    <label>Yeni Admin Şifresi</label>
-                    <input type="password" id="newPassInput" class="form-control" placeholder="Boş bırakırsanız değişmez">
-                </div>
-                <button class="btn" style="width: 100%; justify-content: center;" onclick="saveSettings()">✨ Ayarları Kaydet ve JSON Ver</button>
+                <button class="btn" style="width: 100%; justify-content: center;" onclick="saveSettings()">✨ Ayarları Kaydet</button>
             </div>
 
-            <!-- SCRIPT EKLEME & YÖNETME -->
+            <!-- YENİ: DURUM YÖNETİMİ BÖLÜMÜ -->
+            <div class="admin-box">
+                <h1 style="font-size: 22px; margin-bottom: 20px;">🟢 Durum <span>Yönetimi</span></h1>
+                <div class="form-group">
+                    <label>Oyun / Script Adı</label>
+                    <input type="text" id="statusName" class="form-control" placeholder="Örn: Murder Mystery 2">
+                </div>
+                <div class="form-group">
+                    <label>Anlık Durum</label>
+                    <select id="statusState" class="form-control" style="background: rgba(11, 12, 16, 0.6); color: white;">
+                        <option value="Çalışıyor">🟢 Çalışıyor</option>
+                        <option value="Bakımda">🔴 Bakımda</option>
+                        <option value="Güncelleniyor">🟡 Güncelleniyor</option>
+                    </select>
+                </div>
+                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 30px;" onclick="addStatus()">⚡ Durum Ekle / Güncelle</button>
+
+                <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--primary);">📋 Mevcut Durumları Sil</h3>
+                <div id="adminStatusList"></div>
+            </div>
+
             <div class="admin-box">
                 <h1 style="font-size: 22px; margin-bottom: 20px;">⚙️ Script <span>Yönetimi</span></h1>
-                
-                <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--primary);">➕ Yeni Script Ekle</h3>
-                <div class="form-group">
-                    <label>Script Adı</label>
-                    <input type="text" id="scriptName" class="form-control" placeholder="Örn: Blox Fruits Hub">
-                </div>
-                <div class="form-group">
-                    <label>Açıklama</label>
-                    <input type="text" id="scriptDesc" class="form-control" placeholder="Örn: Otomatik farm...">
-                </div>
-                <div class="form-group">
-                    <label>Executor Etiketleri</label>
-                    <input type="text" id="scriptTag" class="form-control" placeholder="Örn: Delta, Fluxus">
-                </div>
-                <div class="form-group">
-                    <label>Loadstring Kodu</label>
-                    <input type="text" id="scriptCode" class="form-control" placeholder="loadstring(...)()">
-                </div>
-                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 30px;" onclick="addScript()">🚀 Scripti Ekle & İndir</button>
+                <div class="form-group"><label>Script Adı</label><input type="text" id="scriptName" class="form-control" placeholder="Blox Fruits"></div>
+                <div class="form-group"><label>Açıklama</label><input type="text" id="scriptDesc" class="form-control" placeholder="Otomatik farm..."></div>
+                <div class="form-group"><label>Etiket</label><input type="text" id="scriptTag" class="form-control" placeholder="Delta, Fluxus"></div>
+                <div class="form-group"><label>Kod</label><input type="text" id="scriptCode" class="form-control" placeholder="loadstring(...)()"></div>
+                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 30px;" onclick="addScript()">🚀 Eş Zamanlı Script Ekle</button>
 
                 <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--primary);">📋 Mevcut Scriptleri Sil</h3>
                 <div id="adminScriptList"></div>
             </div>
-
         </div>
     </div>
 
     <div id="toast">Bildirim mesajı</div>
-    <footer>
-        <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
-        <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord</a>
-    </footer>
+    <footer><p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p></footer>
 
     <script>
-        let serverData = { announcement: "", adminPassword: "admin123", webhookUrl: "", scripts: [], statuses: [] };
+        const firebaseConfig = {
+            apiKey: "BURAYA_API_KEY", authDomain: "BURAYA_AUTH_DOMAIN",
+            databaseURL: "BURAYA_DATABASE_URL", projectId: "BURAYA_PROJECT_ID",
+            storageBucket: "BURAYA_STORAGE_BUCKET", messagingSenderId: "BURAYA_MESSAGING_SENDER_ID", appId: "BURAYA_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        window.onload = async function() {
-            const savedTheme = localStorage.getItem('hub_theme');
-            if (savedTheme) document.body.className = savedTheme;
-
-            try {
-                let res = await fetch('scripts.json?' + new Date().getTime());
-                serverData = await res.json();
-                document.getElementById('topAnnouncement').textContent = serverData.announcement;
-                document.getElementById('announcementInput').value = serverData.announcement;
-                document.getElementById('webhookInput').value = serverData.webhookUrl || "";
-            } catch(e) {
-                console.log("JSON yüklenemedi");
-            }
+        window.onload = function() {
+            db.ref('announcement').on('value', snap => {
+                document.getElementById('topAnnouncement').textContent = snap.val() || "";
+                document.getElementById('announcementInput').value = snap.val() || "";
+            });
+            db.ref('webhookUrl').on('value', snap => {
+                document.getElementById('webhookInput').value = snap.val() || "";
+            });
 
             if(localStorage.getItem("hub_admin_logged") === "true") {
                 document.getElementById("loginScreen").style.display = "none";
                 document.getElementById("adminPanel").style.display = "block";
                 renderAdminList();
+                renderStatusList(); // Durum listesini yükle
             }
-        }
-
-        function setTheme(themeClass) {
-            document.body.className = themeClass;
-            localStorage.setItem('hub_theme', themeClass);
-        }
-        function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
 
         function checkLogin() {
             const pass = document.getElementById("adminPass").value;
-            let correctPass = serverData.adminPassword || "admin123";
-            if(pass === correctPass) {
-                localStorage.setItem("hub_admin_logged", "true");
-                document.getElementById("loginScreen").style.display = "none";
-                document.getElementById("adminPanel").style.display = "block";
-                renderAdminList();
-                showToast("🔓 Giriş başarılı!");
-            } else {
-                showToast("❌ Hatalı şifre!");
-            }
+            db.ref('adminPassword').once('value').then(snap => {
+                let correctPass = snap.val() || "admin123";
+                if(pass === correctPass) {
+                    localStorage.setItem("hub_admin_logged", "true");
+                    document.getElementById("loginScreen").style.display = "none";
+                    document.getElementById("adminPanel").style.display = "block";
+                    renderAdminList();
+                    renderStatusList();
+                    showToast("🔓 Giriş başarılı!");
+                } else {
+                    showToast("❌ Hatalı şifre!");
+                }
+            });
         }
 
-        function logout() {
-            localStorage.removeItem("hub_admin_logged");
-            location.reload();
-        }
-
-        // JSON dosyasını tarayıcı üzerinden otomatik indirerek GitHub'a atmanı sağlar
-        function downloadJSON() {
-            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(serverData, null, 4));
-            let downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "scripts.json");
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        async function sendDiscordWebhook(content) {
-            let url = serverData.webhookUrl;
-            if(!url) return;
-            try {
-                await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: content })
-                });
-            } catch(e) { console.log("Webhook atılamadı"); }
-        }
+        function logout() { localStorage.removeItem("hub_admin_logged"); location.reload(); }
 
         function saveSettings() {
-            let ann = document.getElementById("announcementInput").value.trim();
-            let web = document.getElementById("webhookInput").value.trim();
-            let newP = document.getElementById("newPassInput").value.trim();
-
-            if(ann) serverData.announcement = ann;
-            serverData.webhookUrl = web;
-            if(newP) serverData.adminPassword = newP;
-
-            downloadJSON();
-            showToast("✨ Ayarlar kaydedildi! İndirilen 'scripts.json' dosyasını GitHub'a yükleyin.");
+            db.ref('announcement').set(document.getElementById("announcementInput").value.trim());
+            db.ref('webhookUrl').set(document.getElementById("webhookInput").value.trim());
+            showToast("✨ Ayarlar buluta kaydedildi!");
         }
+
+        // --- YENİ: DURUM EKLEME VE SİLME FONKSİYONLARI ---
+        function addStatus() {
+            let name = document.getElementById("statusName").value.trim();
+            let state = document.getElementById("statusState").value;
+            if(!name) { showToast("⚠ Lütfen oyun/script adı girin!"); return; }
+
+            db.ref('statuses').push({ name, state }).then(() => {
+                document.getElementById("statusName").value = "";
+                showToast("✨ Durum başarıyla eklendi!");
+            });
+        }
+
+        function deleteStatus(id) {
+            db.ref('statuses/' + id).remove().then(() => showToast("🗑 Durum silindi!"));
+        }
+
+        function renderStatusList() {
+            db.ref('statuses').on('value', snapshot => {
+                let listContainer = document.getElementById("adminStatusList");
+                let data = snapshot.val();
+                if(!data) { listContainer.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Henüz durum yok.</p>"; return; }
+                
+                listContainer.innerHTML = "";
+                Object.keys(data).forEach(id => {
+                    let s = data[id];
+                    let icon = s.state === "Çalışıyor" ? "🟢" : (s.state === "Bakımda" ? "🔴" : "🟡");
+                    listContainer.innerHTML += `
+                        <div class="script-list-item">
+                            <div>
+                                <strong style="font-size:14px; color:#fff;">${s.name}</strong>
+                                <div style="font-size:11px; color:var(--text-muted);">${icon} ${s.state}</div>
+                            </div>
+                            <button class="btn btn-danger" style="padding: 6px 12px; font-size: 11px;" onclick="deleteStatus('${id}')">Sil</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+        // ------------------------------------------------
 
         function addScript() {
             let name = document.getElementById("scriptName").value.trim();
             let desc = document.getElementById("scriptDesc").value.trim();
             let tag = document.getElementById("scriptTag").value.trim();
             let code = document.getElementById("scriptCode").value.trim();
+            if(!name || !code) { showToast("⚠ Zorunlu alanları doldurun!"); return; }
 
-            if(!name || !code) {
-                showToast("⚠ Lütfen script adı ve kodunu doldurun!");
-                return;
-            }
-
-            let newId = serverData.scripts.length > 0 ? serverData.scripts[serverData.scripts.length - 1].id + 1 : 1;
-            serverData.scripts.push({ id: newId, name, desc, tag: tag || "Genel", code, count: 0 });
-            serverData.statuses.push({ name: name, state: "Çalışıyor" });
-
-            document.getElementById("scriptName").value = "";
-            document.getElementById("scriptDesc").value = "";
-            document.getElementById("scriptTag").value = "";
-            document.getElementById("scriptCode").value = "";
-
-            renderAdminList();
-            downloadJSON();
-            sendDiscordWebhook(`🚀 **Yeni Script Eklendi!**\n**İsim:** ${name}\n**Açıklama:** ${desc}`);
-            showToast("✨ Script eklendi! 'scripts.json' indirildi, GitHub'a atın.");
+            db.ref('scripts').push({ name, desc, tag: tag || "Genel", code }).then(() => {
+                document.getElementById("scriptName").value = "";
+                document.getElementById("scriptDesc").value = "";
+                document.getElementById("scriptTag").value = "";
+                document.getElementById("scriptCode").value = "";
+                showToast("✨ Script eklendi!");
+            });
         }
 
         function deleteScript(id) {
-            serverData.scripts = serverData.scripts.filter(s => s.id !== id);
-            renderAdminList();
-            downloadJSON();
-            showToast("🗑 Script silindi! 'scripts.json' indirildi, GitHub'a atın.");
+            db.ref('scripts/' + id).remove().then(() => showToast("🗑 Script silindi!"));
         }
 
         function renderAdminList() {
-            let listContainer = document.getElementById("adminScriptList");
-            if(serverData.scripts.length === 0) {
-                listContainer.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Henüz eklenmiş script yok.</p>";
-                return;
-            }
-
-            listContainer.innerHTML = "";
-            serverData.scripts.forEach(s => {
-                listContainer.innerHTML += `
-                    <div class="script-list-item">
-                        <div>
-                            <strong style="font-size:14px; color:#fff;">${s.name}</strong>
-                            <div style="font-size:11px; color:var(--text-muted);">${s.tag}</div>
+            db.ref('scripts').on('value', snapshot => {
+                let listContainer = document.getElementById("adminScriptList");
+                let data = snapshot.val();
+                if(!data) { listContainer.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Henüz script yok.</p>"; return; }
+                
+                listContainer.innerHTML = "";
+                Object.keys(data).forEach(id => {
+                    let s = data[id];
+                    listContainer.innerHTML += `
+                        <div class="script-list-item">
+                            <div>
+                                <strong style="font-size:14px; color:#fff;">${s.name}</strong>
+                                <div style="font-size:11px; color:var(--text-muted);">${s.tag}</div>
+                            </div>
+                            <button class="btn btn-danger" style="padding: 6px 12px; font-size: 11px;" onclick="deleteScript('${id}')">Sil</button>
                         </div>
-                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 11px;" onclick="deleteScript(${s.id})">Sil</button>
-                    </div>
-                `;
+                    `;
+                });
             });
+        }
+
+        function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
     </script>
 </body>
