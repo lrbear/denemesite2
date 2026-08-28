@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Key Sistemi - Hub</title>
+    <title>Key Sistemi - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        .key-box { background: var(--card-bg); backdrop-filter: blur(12px); padding: 35px; border-radius: 20px; border: 1px solid var(--border); max-width: 450px; width: 100%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .form-control { width: 100%; padding: 14px 16px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 15px; outline: none; margin-bottom: 20px; text-align: center; transition: 0.3s; }
+        .key-box { background: var(--card-bg); backdrop-filter: blur(12px); padding: 40px; border-radius: 20px; border: 1px solid var(--border); max-width: 450px; width: 100%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .form-control { width: 100%; padding: 14px 18px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 15px; outline: none; margin-bottom: 20px; text-align: center; transition: 0.3s; }
         .form-control:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
     </style>
 </head>
@@ -16,7 +19,7 @@
     <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
     <header>
-        <div class="logo">HUB SYSTEM</div>
+        <div class="logo">KLAKZ HUB</div>
         <div class="hamburger" onclick="toggleMenu()">☰</div>
         <nav>
             <a href="index.html">Ana Sayfa</a>
@@ -25,84 +28,61 @@
             <a href="network.html">Projelerim</a>
             <a href="key.html" class="active">Key Sistemi</a>
             <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
-            <div class="theme-picker">
-                <div class="theme-dot" style="background:#6366f1;" onclick="setTheme('')"></div>
-                <div class="theme-dot" style="background:#10b981;" onclick="setTheme('theme-green')"></div>
-                <div class="theme-dot" style="background:#ef4444;" onclick="setTheme('theme-red')"></div>
-            </div>
         </nav>
     </header>
 
     <div class="container">
         <div class="key-box">
-            <h1 style="font-size: 28px; margin-bottom: 10px;">🔑 Key <span>Doğrulama</span></h1>
-            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 25px;">Scriptlere erişim sağlamak için geçerli bir key girin veya key alın.</p>
+            <h1 style="font-size: 28px; margin-bottom: 10px;">Key <span>Doğrulama</span></h1>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">Özel scriptlere erişim sağlamak için geçerli anahtarınızı girin.</p>
             
-            <input type="text" id="keyInput" class="form-control" placeholder="Key'inizi buraya girin...">
-            <div style="display: flex; gap: 10px; flex-direction: column;">
-                <button class="btn" style="width: 100%; justify-content: center;" onclick="verifyKey()">Key'i Doğrula</button>
-                <a href="#" class="btn btn-secondary" style="width: 100%; justify-content: center; text-decoration: none;" onclick="getKey(event)">Key Al (Get Key)</a>
-            </div>
+            <input type="text" id="userKeyInput" class="form-control" placeholder="Anahtarınızı buraya yazın...">
+            <button class="btn" style="width: 100%; justify-content: center;" onclick="verifyKey()">🔑 Key'i Doğrula</button>
         </div>
     </div>
 
     <div id="toast">Bildirim mesajı</div>
-    <footer>
-        <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
-        <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord</a>
-    </footer>
+    <footer><p>&copy; 2026 Klakz Hub. Tüm hakları saklıdır.</p></footer>
 
     <script>
-        window.addEventListener('DOMContentLoaded', async () => {
-            const savedTheme = localStorage.getItem('hub_theme');
-            if (savedTheme) document.body.className = savedTheme;
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJuMNSxWFuNTO0xGriUo8QoaC9g-ie8WM",
+            authDomain: "klakz-database.firebaseapp.com",
+            databaseURL: "https://klakz-database-default-rtdb.firebaseio.com",
+            projectId: "klakz-database",
+            storageBucket: "klakz-database.firebasestorage.app",
+            messagingSenderId: "437747915577",
+            appId: "1:437747915577:web:f4ffa2f76d6d7a923966e8"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-            try {
-                let res = await fetch('scripts.json?' + new Date().getTime());
-                let data = await res.json();
-                document.getElementById('topAnnouncement').textContent = data.announcement;
-            } catch(e) {
-                document.getElementById('topAnnouncement').textContent = "🔥 v3.2 Güncellemesi Yayında!";
-            }
-
-            // Eğer daha önceden key doğrulanmışsa inputu doldur
-            let savedKey = localStorage.getItem('hub_user_key');
-            if(savedKey) {
-                document.getElementById('keyInput').value = savedKey;
+        window.addEventListener('DOMContentLoaded', () => {
+            db.ref('announcement').on('value', snap => {
+                document.getElementById('topAnnouncement').textContent = snap.val() || "";
+            });
+            // Eğer daha önceden key doğrulanmışsa yönlendir
+            if(localStorage.getItem("hub_verified") === "true") {
+                showToast("✅ Zaten onaylısınız!");
             }
         });
 
         function verifyKey() {
-            let key = document.getElementById('keyInput').value.trim();
-            if(!key) {
-                showToast("⚠ Lütfen bir key girin!");
-                return;
-            }
-            // Örnek doğrulama mantığı (istediğin gibi özelleştirebilirsin)
-            if(key.startsWith("HUB-")) {
-                localStorage.setItem('hub_user_key', key);
-                showToast("✨ Key başarıyla doğrulandı!");
-                setTimeout(() => { window.location.href = "script.html"; }, 1500);
-            } else {
-                showToast("❌ Geçersiz veya hatalı key!");
-            }
+            let userKey = document.getElementById("userKeyInput").value.trim();
+            if(!userKey) { showToast("⚠ Lütfen bir key girin!"); return; }
+
+            db.ref('validKey').once('value').then(snap => {
+                let correctKey = snap.val() || "klakz2026"; // Varsayılan key
+                if(userKey === correctKey) {
+                    localStorage.setItem("hub_verified", "true");
+                    showToast("🎉 Key başarıyla doğrulandı!");
+                    setTimeout(() => { window.location.href = "script.html"; }, 1500);
+                } else {
+                    showToast("❌ Geçersiz anahtar!");
+                }
+            });
         }
 
-        function getKey(e) {
-            e.preventDefault();
-            showToast("🔗 Key alma sayfasına yönlendiriliyorsunuz...");
-            // Buraya reklam/linkvertise linkini ekleyebilirsin
-            setTimeout(() => {
-                let generatedKey = "HUB-" + Math.floor(100000 + Math.random() * 900000);
-                document.getElementById('keyInput').value = generatedKey;
-                showToast("🔑 Yeni key'iniz oluşturuldu ve yazıldı!");
-            }, 1000);
-        }
-
-        function setTheme(themeClass) {
-            document.body.className = themeClass;
-            localStorage.setItem('hub_theme', themeClass);
-        }
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
         function showToast(message) {
             const toast = document.getElementById('toast');
