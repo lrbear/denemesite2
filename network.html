@@ -6,14 +6,14 @@
     <title>Projelerim - Hub</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .network-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; width: 100%; max-width: 950px; }
-        .network-card { background: var(--card-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; text-align: left; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; }
-        .network-card:hover { border-color: var(--primary); transform: translateY(-4px); }
+        .project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 900px; margin-bottom: 40px; }
+        .project-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 25px; border-radius: 16px; text-align: left; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; }
+        .project-card:hover { border-color: var(--primary); transform: translateY(-5px); }
     </style>
 </head>
 <body>
 
-    <div class="announcement-bar" id="topAnnouncement">🔥 v3.1 Güncellemesi Yayında!</div>
+    <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
     <header>
         <div class="logo">HUB SYSTEM</div>
@@ -34,47 +34,47 @@
     </header>
 
     <div class="container" style="justify-content: flex-start;">
-        <h1 style="font-size: 36px; margin-top: 20px;">Proje <span>Ağı</span></h1>
-        <p>Geliştirdiğim tüm web platformlarına ve hub projelerine buradan ulaşabilirsin.</p>
+        <h1 style="font-size: 36px; margin-top: 20px;">Geliştirdiğim <span>Projeler</span></h1>
+        <p style="margin-bottom: 30px;">Kendi geliştirdiğim diğer web araçlarını, oyun modlarını ve yazılımları buradan inceleyebilirsin.</p>
 
-        <div class="network-grid">
-            <div class="network-card">
+        <div class="project-grid">
+            <div class="project-card">
                 <div>
-                    <h3>VeloX-Hub</h3>
-                    <p style="font-size: 13px; margin-bottom: 15px;">Özel script dağıtım ve ana platform arayüzü.</p>
+                    <h3 style="color:#fff; font-size:20px; margin-bottom:8px;">ForgeScript Hub</h3>
+                    <p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Özel kullanıcı panelli, gelişmiş veritabanı entegrasyonlu web script yönetim aracı.</p>
                 </div>
-                <a href="https://lrbear.github.io/VeloX-Hub/" target="_blank" class="btn" style="width: 100%; justify-content: center;">🔗 Siteye Git</a>
+                <a href="#" class="btn" style="text-align:center; justify-content:center;">Projeyi İncele</a>
             </div>
-            <div class="network-card">
+            <div class="project-card">
                 <div>
-                    <h3>klakzsweb</h3>
-                    <p style="font-size: 13px; margin-bottom: 15px;">Klakz Hub arayüzü ve script yönetim paneli.</p>
+                    <h3 style="color:#fff; font-size:20px; margin-bottom:8px;">Klakz Lua Executor Tools</h3>
+                    <p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Roblox oyunları için özel arayüz tasarımları ve script yönetim aracı.</p>
                 </div>
-                <a href="https://lrbear.github.io/klakzsweb/" target="_blank" class="btn" style="width: 100%; justify-content: center;">🔗 Siteye Git</a>
-            </div>
-            <div class="network-card">
-                <div>
-                    <h3>TLEAN Series</h3>
-                    <p style="font-size: 13px; margin-bottom: 15px;">TLEAN, TLEAN2 ve TLEAN-v4 proje sürümleri.</p>
-                </div>
-                <a href="https://lrbear.github.io/TLEAN/" target="_blank" class="btn" style="width: 100%; justify-content: center;">🔗 Siteye Git</a>
+                <a href="#" class="btn" style="text-align:center; justify-content:center;">Projeyi İncele</a>
             </div>
         </div>
     </div>
 
+    <div id="toast">Bildirim mesajı</div>
     <footer>
         <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
         <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord</a>
     </footer>
 
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             const savedTheme = localStorage.getItem('hub_theme');
             if (savedTheme) document.body.className = savedTheme;
 
-            let savedAnn = localStorage.getItem('hub_announcement');
-            if(savedAnn) document.getElementById('topAnnouncement').textContent = savedAnn;
+            try {
+                let res = await fetch('scripts.json?' + new Date().getTime());
+                let data = await res.json();
+                document.getElementById('topAnnouncement').textContent = data.announcement;
+            } catch(e) {
+                document.getElementById('topAnnouncement').textContent = "🔥 v3.2 Güncellemesi Yayında!";
+            }
         });
+
         function setTheme(themeClass) {
             document.body.className = themeClass;
             localStorage.setItem('hub_theme', themeClass);
