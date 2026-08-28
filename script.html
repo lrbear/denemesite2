@@ -25,10 +25,10 @@
         }
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 20px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1050px;
         }
         .card {
             background: var(--card-bg);
@@ -54,8 +54,28 @@
         }
         .card p {
             font-size: 14px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             color: var(--text-muted);
+        }
+        .tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .tag {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .update-date {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 12px;
         }
     </style>
 </head>
@@ -72,32 +92,46 @@
 
     <div class="container" style="justify-content: flex-start;">
         <h1 style="font-size: 36px; margin-top: 20px;">Script <span>Kütüphanesi</span></h1>
-        <p>Aşağıdaki arama çubuğunu kullanarak dilediğin scripti bulabilir ve tek tıkla kopyalayabilirsin.</p>
+        <p>Arama çubuğunu kullanarak scriptleri filtreleyebilir ve uyumlu executor rozetlerini inceleyebilirsin.</p>
         
-        <input type="text" id="searchInput" class="search-bar" placeholder="Script ara (Örn: Lumber Tycoon, Farm)..." onkeyup="filterScripts()">
+        <input type="text" id="searchInput" class="search-bar" placeholder="Script ara (Örn: Lumber, MM2)..." onkeyup="filterScripts()">
 
         <div class="card-grid" id="scriptGrid">
+            <!-- Script Kartı 1 -->
             <div class="card" data-name="lumber tycoon 2 farm esp">
                 <div>
                     <h3>Lumber Tycoon 2 Hub</h3>
-                    <p>Otomatik kesim, sınırsız para, hızlı ışınlanma ve ESP özellikleri barındırır.</p>
+                    <p>Otomatik kesim, sınırsız para, hızlı ışınlanma ve ESP özellikleri.</p>
+                    <div class="update-date">🕒 Son Güncelleme: Dün</div>
+                    <div class="tags">
+                        <span class="tag">Delta</span>
+                        <span class="tag">Synapse Z</span>
+                        <span class="tag">Hydrogen</span>
+                    </div>
                 </div>
                 <button class="btn" onclick="copyScript('loadstring(game:HttpGet(\'BURAYA_SCRIPT_1\'))()')">📋 Scripti Kopyala</button>
             </div>
             
+            <!-- Script Kartı 2 -->
             <div class="card" data-name="murder mystery 2 mm2 aimbot">
                 <div>
                     <h3>Murder Mystery 2 Script</h3>
-                    <p>Tüm rolleri görme (Sheriff/Murderer ESP), hız hilesi ve otomatik toplama.</p>
+                    <p>Rolleri görme (ESP), hız hilesi ve otomatik toplama menüsü.</p>
+                    <div class="update-date">🕒 Son Güncelleme: 3 gün önce</div>
+                    <div class="tags">
+                        <span class="tag">Delta</span>
+                        <span class="tag">Fluxus</span>
+                    </div>
                 </div>
                 <button class="btn" onclick="copyScript('loadstring(game:HttpGet(\'BURAYA_SCRIPT_2\'))()')">📋 Scripti Kopyala</button>
             </div>
         </div>
     </div>
 
-    <div id="toast">Script başarıyla kopyalandı!</div>
+    <div id="toast">Bildirim mesajı</div>
     <footer>
         <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
+        <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord Topluluğumuz</a>
     </footer>
 
     <script>
