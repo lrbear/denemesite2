@@ -39,7 +39,7 @@
     <div class="container">
         <div class="key-box">
             <h2 style="font-size: 26px;">🔑 Erişim Anahtarı (Key)</h2>
-            <p style="color: var(--text-muted); font-size: 14px;">Scriptlere ve özel özelliklere erişmek için lütfen key giriniz. Girilen key <strong>24 saat</strong> boyunca geçerli olacaktır.</p>
+            <p style="color: var(--text-muted); font-size: 14px;">Scriptlere erişmek için lütfen key giriniz. Girilen key <strong>24 saat</strong> boyunca geçerli olacaktır.</p>
             <input type="text" id="keyInput" class="key-input" placeholder="Key'inizi buraya girin...">
             <button class="btn-main" onclick="verifyKey()">Doğrula ve Devam Et</button>
             <a href="https://linkvertise.com" target="_blank" style="color: var(--primary); font-size: 13px; text-decoration: none;">Linkvertise ile Key Al (Örnek)</a>
@@ -68,18 +68,13 @@
 
         function verifyKey() {
             let inputKey = document.getElementById('keyInput').value.trim();
-            // Buraya kendi geçerli key kontrol mantığını yazabilirsin (Örn: Veritabanından kontrol veya sabit key)
             if(inputKey === "KLAKZ-2026-VIP" || inputKey.length > 4) {
-                // Tam 24 saatlik zaman damgası hesaplama (24 saat = 86400000 milisaniye)
                 let expireTime = new Date().getTime() + (24 * 60 * 60 * 1000);
-                
                 localStorage.setItem('klakz_verified', 'true');
                 localStorage.setItem('klakz_expire', expireTime);
 
                 showToast("✅ Key başarıyla doğrulandı! Yönlendiriliyorsunuz...");
-                setTimeout(() => {
-                    window.location.href = "script.html";
-                }, 1500);
+                setTimeout(() => { window.location.href = "script.html"; }, 1500);
             } else {
                 showToast("❌ Geçersiz Key!");
             }
