@@ -13,7 +13,14 @@
         <nav>
             <a href="index.html" class="active">Ana Sayfa</a>
             <a href="script.html">Scriptler</a>
+            <a href="status.html">Durum</a>
+            <a href="network.html">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
+            <div class="theme-picker">
+                <div class="theme-dot" style="background:#6366f1;" onclick="setTheme('')" title="Mor Tema"></div>
+                <div class="theme-dot" style="background:#10b981;" onclick="setTheme('theme-green')" title="Yeşil Tema"></div>
+                <div class="theme-dot" style="background:#ef4444;" onclick="setTheme('theme-red')" title="Kırmızı Tema"></div>
+            </div>
         </nav>
     </header>
 
@@ -32,5 +39,15 @@
         <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord Topluluğumuz</a>
     </footer>
 
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('hub_theme');
+            if (savedTheme) document.body.className = savedTheme;
+        });
+        function setTheme(themeClass) {
+            document.body.className = themeClass;
+            localStorage.setItem('hub_theme', themeClass);
+        }
+    </script>
 </body>
 </html>
