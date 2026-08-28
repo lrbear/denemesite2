@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Durum - Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 900px; }
+        .status-card { background: var(--card-bg); border: 1px solid var(--border); padding: 25px; border-radius: 16px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+        .badge-working { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-patching { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">HUB SYSTEM</div>
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="script.html">Scriptler</a>
+            <a href="status.html" class="active">Durum</a>
+            <a href="network.html">Projelerim</a>
+            <a href="key.html">Key Sistemi</a>
+            <div class="theme-picker">
+                <div class="theme-dot" style="background:#6366f1;" onclick="setTheme('')"></div>
+                <div class="theme-dot" style="background:#10b981;" onclick="setTheme('theme-green')"></div>
+                <div class="theme-dot" style="background:#ef4444;" onclick="setTheme('theme-red')"></div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container" style="justify-content: flex-start;">
+        <h1 style="font-size: 36px; margin-top: 20px;">Sistem <span>Durumu</span></h1>
+        <p>Scriptlerimizin anlık çalışma durumunu buradan takip edebilirsin.</p>
+
+        <div class="status-grid">
+            <div class="status-card">
+                <div>
+                    <h3>Lumber Tycoon 2 Hub</h3>
+                    <p style="font-size: 13px; margin: 5px 0 0 0;">Son Kontrol: Az önce</p>
+                </div>
+                <span class="badge-working">🟢 Çalışıyor</span>
+            </div>
+            <div class="status-card">
+                <div>
+                    <h3>Murder Mystery 2</h3>
+                    <p style="font-size: 13px; margin: 5px 0 0 0;">Son Kontrol: Güncelleniyor</p>
+                </div>
+                <span class="badge-patching">🔴 Bakımda</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
+        <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord</a>
+    </footer>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('hub_theme');
+            if (savedTheme) document.body.className = savedTheme;
+        });
+        function setTheme(themeClass) {
+            document.body.className = themeClass;
+            localStorage.setItem('hub_theme', themeClass);
+        }
+    </script>
+</body>
+</html>
