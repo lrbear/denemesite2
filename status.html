@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Durum - Hub</title>
+    <title>Durum - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase -->
+    <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
@@ -23,7 +23,7 @@
     <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
     <header>
-        <div class="logo">HUB SYSTEM</div>
+        <div class="logo">KLAKZ HUB</div>
         <div class="hamburger" onclick="toggleMenu()">☰</div>
         <nav>
             <a href="index.html">Ana Sayfa</a>
@@ -42,26 +42,26 @@
         <div class="status-grid" id="statusGrid"></div>
     </div>
 
-    <footer>
-        <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
-    </footer>
+    <footer><p>&copy; 2026 Klakz Hub. Tüm hakları saklıdır.</p></footer>
 
     <script>
         const firebaseConfig = {
-            apiKey: "BURAYA_API_KEY", authDomain: "BURAYA_AUTH_DOMAIN",
-            databaseURL: "BURAYA_DATABASE_URL", projectId: "BURAYA_PROJECT_ID",
-            storageBucket: "BURAYA_STORAGE_BUCKET", messagingSenderId: "BURAYA_MESSAGING_SENDER_ID", appId: "BURAYA_APP_ID"
+            apiKey: "AIzaSyAJuMNSxWFuNTO0xGriUo8QoaC9g-ie8WM",
+            authDomain: "klakz-database.firebaseapp.com",
+            databaseURL: "https://klakz-database-default-rtdb.firebaseio.com",
+            projectId: "klakz-database",
+            storageBucket: "klakz-database.firebasestorage.app",
+            messagingSenderId: "437747915577",
+            appId: "1:437747915577:web:f4ffa2f76d6d7a923966e8"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Duyuru Dinle
             db.ref('announcement').on('value', snap => {
-                document.getElementById('topAnnouncement').textContent = snap.val() || "🔥 Durum Sistemi Aktif!";
+                document.getElementById('topAnnouncement').textContent = snap.val() || "";
             });
 
-            // Durumları Gerçek Zamanlı Dinle
             db.ref('statuses').on('value', snap => {
                 let data = snap.val();
                 let statusesArray = data ? Object.keys(data).map(key => data[key]) : [];
