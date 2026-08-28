@@ -6,15 +6,14 @@
     <title>Key Sistemi - Hub</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .key-box { background: var(--card-bg); backdrop-filter: blur(12px); padding: 40px 30px; border-radius: 20px; border: 1px solid var(--border); max-width: 450px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        input.key-input { width: 100%; padding: 14px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 16px; margin-bottom: 15px; text-align: center; outline: none; transition: 0.3s; }
-        input.key-input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
-        .status-box { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; padding: 15px; border-radius: 12px; font-weight: 600; margin-bottom: 20px; display: none; }
+        .key-box { background: var(--card-bg); backdrop-filter: blur(12px); padding: 35px; border-radius: 20px; border: 1px solid var(--border); max-width: 450px; width: 100%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .form-control { width: 100%; padding: 14px 16px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 15px; outline: none; margin-bottom: 20px; text-align: center; transition: 0.3s; }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
     </style>
 </head>
 <body>
 
-    <div class="announcement-bar" id="topAnnouncement">🔥 v3.1 Güncellemesi Yayında!</div>
+    <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
     <header>
         <div class="logo">HUB SYSTEM</div>
@@ -36,15 +35,13 @@
 
     <div class="container">
         <div class="key-box">
-            <h1 style="font-size: 30px; margin-bottom: 10px;">Key <span>Sistemi</span></h1>
-            <p style="font-size: 14px; margin-bottom: 25px;">Scriptlere tam erişim sağlamak için key doğrulayın.</p>
+            <h1 style="font-size: 28px; margin-bottom: 10px;">🔑 Key <span>Doğrulama</span></h1>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 25px;">Scriptlere erişim sağlamak için geçerli bir key girin veya key alın.</p>
             
-            <div id="activeStatus" class="status-box">✔ Keyiniz Aktif! Scriptleri özgürce kullanabilirsiniz.</div>
-
-            <div id="keyFormContainer">
-                <a href="#" class="btn" style="width: 100%; justify-content: center; margin-bottom: 20px;" onclick="generateKey(event)">🔗 Key Al</a>
-                <input type="text" id="userKey" class="key-input" placeholder="Key değerini buraya yapıştır...">
-                <button class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="verifyKey()">✔ Keyi Doğrula</button>
+            <input type="text" id="keyInput" class="form-control" placeholder="Key'inizi buraya girin...">
+            <div style="display: flex; gap: 10px; flex-direction: column;">
+                <button class="btn" style="width: 100%; justify-content: center;" onclick="verifyKey()">Key'i Doğrula</button>
+                <a href="#" class="btn btn-secondary" style="width: 100%; justify-content: center; text-decoration: none;" onclick="getKey(event)">Key Al (Get Key)</a>
             </div>
         </div>
     </div>
@@ -56,18 +53,52 @@
     </footer>
 
     <script>
-        window.onload = function() {
+        window.addEventListener('DOMContentLoaded', async () => {
             const savedTheme = localStorage.getItem('hub_theme');
             if (savedTheme) document.body.className = savedTheme;
 
-            let savedAnn = localStorage.getItem('hub_announcement');
-            if(savedAnn) document.getElementById('topAnnouncement').textContent = savedAnn;
+            try {
+                let res = await fetch('scripts.json?' + new Date().getTime());
+                let data = await res.json();
+                document.getElementById('topAnnouncement').textContent = data.announcement;
+            } catch(e) {
+                document.getElementById('topAnnouncement').textContent = "🔥 v3.2 Güncellemesi Yayında!";
+            }
 
-            if(localStorage.getItem("hub_key_active") === "true") {
-                document.getElementById("activeStatus").style.display = "block";
-                document.getElementById("keyFormContainer").style.display = "none";
+            // Eğer daha önceden key doğrulanmışsa inputu doldur
+            let savedKey = localStorage.getItem('hub_user_key');
+            if(savedKey) {
+                document.getElementById('keyInput').value = savedKey;
+            }
+        });
+
+        function verifyKey() {
+            let key = document.getElementById('keyInput').value.trim();
+            if(!key) {
+                showToast("⚠ Lütfen bir key girin!");
+                return;
+            }
+            // Örnek doğrulama mantığı (istediğin gibi özelleştirebilirsin)
+            if(key.startsWith("HUB-")) {
+                localStorage.setItem('hub_user_key', key);
+                showToast("✨ Key başarıyla doğrulandı!");
+                setTimeout(() => { window.location.href = "script.html"; }, 1500);
+            } else {
+                showToast("❌ Geçersiz veya hatalı key!");
             }
         }
+
+        function getKey(e) {
+            e.preventDefault();
+            showToast("🔗 Key alma sayfasına yönlendiriliyorsunuz...");
+            // Buraya reklam/linkvertise linkini ekleyebilirsin
+            setTimeout(() => {
+                let generatedKey = "HUB-" + Math.floor(100000 + Math.random() * 900000);
+                document.getElementById('keyInput').value = generatedKey;
+                showToast("🔑 Yeni key'iniz oluşturuldu ve yazıldı!");
+            }, 1000);
+        }
+
         function setTheme(themeClass) {
             document.body.className = themeClass;
             localStorage.setItem('hub_theme', themeClass);
@@ -78,20 +109,6 @@
             toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 3000);
-        }
-        function generateKey(e) {
-            e.preventDefault();
-            showToast("🚀 Yönlendiriliyorsunuz...");
-        }
-        function verifyKey() {
-            const key = document.getElementById('userKey').value.trim();
-            if(key === "") {
-                showToast("⚠ Lütfen geçerli bir key girin!");
-            } else {
-                localStorage.setItem("hub_key_active", "true");
-                showToast("✅ Key doğrulandı! Hoş geldiniz.");
-                setTimeout(() => { location.reload(); }, 1000);
-            }
         }
     </script>
 </body>
