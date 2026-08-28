@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Sistemi - Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .key-box {
+            background: #181922;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-width: 450px;
+            width: 100%;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #0f1016;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Hub v2.0</div>
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="script.html">Scriptler</a>
+            <a href="key.html" class="active">Key Sistemi</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="key-box">
+            <h1>Key Sistemi</h1>
+            <p style="font-size: 15px; margin-bottom: 20px;">Scriptleri kullanabilmek için aşağıdan key alabilir veya keyini doğrulayabilirsin.</p>
+            
+            <a href="#" class="btn" style="width: 100%; margin-bottom: 15px;" onclick="generateKey(event)">Key Al (Linkvertise vb.)</a>
+            
+            <input type="text" id="userKey" placeholder="Keyinizi buraya girin...">
+            <button class="btn btn-secondary" style="width: 100%;" onclick="verifyKey()">Keyi Doğrula</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Tüm Hakları Saklıdır.</p>
+    </footer>
+
+    <script>
+        function generateKey(e) {
+            e.preventDefault();
+            alert("Buraya reklam linki (Linkvertise vb.) yönlendirmesi ekleyebilirsin!");
+        }
+        function verifyKey() {
+            const key = document.getElementById('userKey').value;
+            if(key.trim() === "") {
+                alert("Lütfen bir key girin!");
+            } else {
+                alert("Key kontrol ediliyor: " + key);
+            }
+        }
+    </script>
+
+</body>
+</html>
