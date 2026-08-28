@@ -5,9 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scriptler - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        // 24 Saatlik Süre Denetimi
+        let isVerified = localStorage.getItem('klakz_verified');
+        let expireTime = localStorage.getItem('klakz_expire');
+        let now = new Date().getTime();
+        if (!isVerified || !expireTime || now > parseInt(expireTime)) {
+            localStorage.removeItem('klakz_verified');
+            localStorage.removeItem('klakz_expire');
+            window.location.href = 'key.html';
+        }
+    </script>
     <style>
         .search-box { width: 100%; max-width: 600px; padding: 14px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 16px; outline: none; margin-bottom: 10px; }
         .search-history { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; width: 100%; max-width: 600px; }
