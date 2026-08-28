@@ -5,10 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scriptler - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDK (Compat) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
+        .filter-container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 900px; margin-bottom: 30px; }
+        .search-input { width: 100%; padding: 14px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 15px; outline: none; transition: 0.3s; }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+        .tag-filters { display: flex; gap: 10px; flex-wrap: wrap; }
+        .tag-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-muted); padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .tag-btn:hover, .tag-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
         .script-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 900px; margin-bottom: 40px; }
         .script-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 25px; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.3s; }
         .script-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2); }
@@ -34,7 +41,15 @@
 
     <div class="container" style="justify-content: flex-start;">
         <h1 style="font-size: 36px; margin-top: 20px;">Özel <span>Scriptler</span></h1>
-        <p style="margin-bottom: 30px;">Admin panelinden eklenen en güncel scriptlere buradan ulaşabilirsin.</p>
+        <p style="margin-bottom: 25px;">Admin panelinden eklenen en güncel scriptlere buradan ulaşabilirsin.</p>
+
+        <!-- ARAMA VE FİLTRELEME ÇUBUĞU -->
+        <div class="filter-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Script veya oyun adı ara..." onkeyup="filterScripts()">
+            <div class="tag-filters" id="tagFilters">
+                <button class="tag-btn active" onclick="filterByTag('Tümü', this)">Tümü</button>
+            </div>
+        </div>
 
         <div class="script-grid" id="scriptGrid"></div>
     </div>
@@ -55,6 +70,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        let allScripts = [];
+        let activeTag = "Tümü";
+
         window.addEventListener('DOMContentLoaded', () => {
             db.ref('announcement').on('value', snap => {
                 document.getElementById('topAnnouncement').textContent = snap.val() || "";
@@ -62,16 +80,47 @@
 
             db.ref('scripts').on('value', snap => {
                 let data = snap.val();
-                let scriptsArray = data ? Object.keys(data).map(key => data[key]) : [];
-                renderScripts(scriptsArray);
+                allScripts = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+                updateTagButtons();
+                renderScripts(allScripts);
             });
         });
+
+        // Etiket butonlarını otomatik oluştur
+        function updateTagButtons() {
+            let tags = ["Tümü"];
+            allScripts.forEach(s => {
+                if(s.tag && !tags.includes(s.tag)) tags.push(s.tag);
+            });
+            const container = document.getElementById('tagFilters');
+            container.innerHTML = "";
+            tags.forEach(t => {
+                container.innerHTML += `<button class="tag-btn ${activeTag === t ? 'active' : ''}" onclick="filterByTag('${t}', this)">${t}</button>`;
+            });
+        }
+
+        function filterByTag(tag, btn) {
+            activeTag = tag;
+            document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterScripts();
+        }
+
+        function filterScripts() {
+            let query = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = allScripts.filter(s => {
+                let matchesTag = (activeTag === "Tümü" || s.tag === activeTag);
+                let matchesSearch = s.name.toLowerCase().includes(query) || (s.desc && s.desc.toLowerCase().includes(query));
+                return matchesTag && matchesSearch;
+            });
+            renderScripts(filtered);
+        }
 
         function renderScripts(scripts) {
             const grid = document.getElementById('scriptGrid');
             grid.innerHTML = "";
             if(scripts.length === 0) {
-                grid.innerHTML = "<p style='color:var(--text-muted);'>Henüz eklenmiş script bulunmuyor.</p>";
+                grid.innerHTML = "<p style='color:var(--text-muted);'>Aradığınız kriterlere uygun script bulunamadı.</p>";
                 return;
             }
 
@@ -82,7 +131,7 @@
                 grid.innerHTML += `
                     <div class="script-card">
                         <div>
-                            <span class="tag">${item.tag}</span>
+                            <span class="tag">${item.tag || 'Genel'}</span>
                             <h3 style="color:#fff; font-size:20px; margin-bottom:8px;">${item.name}</h3>
                             <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">${item.desc || 'Açıklama girilmemiş.'}</p>
                         </div>
