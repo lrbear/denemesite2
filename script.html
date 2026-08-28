@@ -24,6 +24,14 @@
 </head>
 <body>
 
+    <!-- KİRİŞ KONTROLÜ: Key girilmediyse kullanıcı scriptleri göremez, Key sayfasına atılır -->
+    <script>
+        if(localStorage.getItem("hub_verified") !== "true") {
+            alert("⚠ Scriptlere erişmek için önce Key doğrulaması yapmalısınız!");
+            window.location.href = "key.html";
+        }
+    </script>
+
     <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
     <header>
@@ -86,7 +94,6 @@
             });
         });
 
-        // Etiket butonlarını otomatik oluştur
         function updateTagButtons() {
             let tags = ["Tümü"];
             allScripts.forEach(s => {
@@ -141,7 +148,6 @@
             });
         }
 
-        // COOLDOWN SİSTEMİ (5 Saniye)
         function copyScript(encodedCode, btnId) {
             let code = decodeURIComponent(encodedCode);
             navigator.clipboard.writeText(code).then(() => {
