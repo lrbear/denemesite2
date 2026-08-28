@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Paneli - Hub</title>
+    <title>Admin Paneli - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase -->
+    <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
@@ -22,7 +22,7 @@
     <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
     <header>
-        <div class="logo">HUB SYSTEM</div>
+        <div class="logo">KLAKZ HUB</div>
         <div class="hamburger" onclick="toggleMenu()">☰</div>
         <nav>
             <a href="index.html">Ana Sayfa</a>
@@ -38,6 +38,7 @@
         <!-- GİRİŞ EKRANI -->
         <div id="loginScreen" class="admin-box" style="max-width: 400px; text-align: center; margin-top: 50px;">
             <h1 style="font-size: 26px; margin-bottom: 10px;">Admin <span>Girişi</span></h1>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">İlk girişte şifreniz otomatik olarak: <b>admin123</b> yapılır.</p>
             <input type="password" id="adminPass" class="form-control" placeholder="Admin şifresi..." style="text-align: center; margin-bottom: 15px;">
             <button class="btn" style="width: 100%; justify-content: center;" onclick="checkLogin()">Giriş Yap</button>
         </div>
@@ -50,24 +51,15 @@
                     <button class="btn btn-danger" style="padding: 6px 12px; font-size: 11px;" onclick="logout()">Çıkış Yap</button>
                 </div>
                 
-                <div class="form-group">
-                    <label>Üst Şerit Duyuru Metni</label>
-                    <input type="text" id="announcementInput" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Discord Webhook URL</label>
-                    <input type="text" id="webhookInput" class="form-control" placeholder="https://discord.com/api/webhooks/...">
-                </div>
+                <div class="form-group"><label>Üst Şerit Duyuru Metni</label><input type="text" id="announcementInput" class="form-control"></div>
+                <div class="form-group"><label>Discord Webhook URL</label><input type="text" id="webhookInput" class="form-control" placeholder="https://discord.com/api/webhooks/..."></div>
                 <button class="btn" style="width: 100%; justify-content: center;" onclick="saveSettings()">✨ Ayarları Kaydet</button>
             </div>
 
-            <!-- YENİ: DURUM YÖNETİMİ BÖLÜMÜ -->
+            <!-- DURUM YÖNETİMİ -->
             <div class="admin-box">
                 <h1 style="font-size: 22px; margin-bottom: 20px;">🟢 Durum <span>Yönetimi</span></h1>
-                <div class="form-group">
-                    <label>Oyun / Script Adı</label>
-                    <input type="text" id="statusName" class="form-control" placeholder="Örn: Murder Mystery 2">
-                </div>
+                <div class="form-group"><label>Oyun / Script Adı</label><input type="text" id="statusName" class="form-control" placeholder="Murder Mystery 2"></div>
                 <div class="form-group">
                     <label>Anlık Durum</label>
                     <select id="statusState" class="form-control" style="background: rgba(11, 12, 16, 0.6); color: white;">
@@ -76,39 +68,46 @@
                         <option value="Güncelleniyor">🟡 Güncelleniyor</option>
                     </select>
                 </div>
-                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 30px;" onclick="addStatus()">⚡ Durum Ekle / Güncelle</button>
-
-                <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--primary);">📋 Mevcut Durumları Sil</h3>
+                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 20px;" onclick="addStatus()">⚡ Durum Ekle / Güncelle</button>
                 <div id="adminStatusList"></div>
             </div>
 
+            <!-- SCRIPT YÖNETİMİ -->
             <div class="admin-box">
                 <h1 style="font-size: 22px; margin-bottom: 20px;">⚙️ Script <span>Yönetimi</span></h1>
                 <div class="form-group"><label>Script Adı</label><input type="text" id="scriptName" class="form-control" placeholder="Blox Fruits"></div>
                 <div class="form-group"><label>Açıklama</label><input type="text" id="scriptDesc" class="form-control" placeholder="Otomatik farm..."></div>
                 <div class="form-group"><label>Etiket</label><input type="text" id="scriptTag" class="form-control" placeholder="Delta, Fluxus"></div>
                 <div class="form-group"><label>Kod</label><input type="text" id="scriptCode" class="form-control" placeholder="loadstring(...)()"></div>
-                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 30px;" onclick="addScript()">🚀 Eş Zamanlı Script Ekle</button>
-
-                <h3 style="font-size: 16px; margin-bottom: 12px; color: var(--primary);">📋 Mevcut Scriptleri Sil</h3>
+                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 20px;" onclick="addScript()">🚀 Script Ekle</button>
                 <div id="adminScriptList"></div>
             </div>
         </div>
     </div>
 
     <div id="toast">Bildirim mesajı</div>
-    <footer><p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p></footer>
+    <footer><p>&copy; 2026 Klakz Hub. Tüm hakları saklıdır.</p></footer>
 
     <script>
         const firebaseConfig = {
-            apiKey: "BURAYA_API_KEY", authDomain: "BURAYA_AUTH_DOMAIN",
-            databaseURL: "BURAYA_DATABASE_URL", projectId: "BURAYA_PROJECT_ID",
-            storageBucket: "BURAYA_STORAGE_BUCKET", messagingSenderId: "BURAYA_MESSAGING_SENDER_ID", appId: "BURAYA_APP_ID"
+            apiKey: "AIzaSyAJuMNSxWFuNTO0xGriUo8QoaC9g-ie8WM",
+            authDomain: "klakz-database.firebaseapp.com",
+            databaseURL: "https://klakz-database-default-rtdb.firebaseio.com",
+            projectId: "klakz-database",
+            storageBucket: "klakz-database.firebasestorage.app",
+            messagingSenderId: "437747915577",
+            appId: "1:437747915577:web:f4ffa2f76d6d7a923966e8"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         window.onload = function() {
+            db.ref('adminPassword').once('value').then(snap => {
+                if(!snap.exists()) {
+                    db.ref('adminPassword').set("admin123");
+                }
+            });
+
             db.ref('announcement').on('value', snap => {
                 document.getElementById('topAnnouncement').textContent = snap.val() || "";
                 document.getElementById('announcementInput').value = snap.val() || "";
@@ -121,7 +120,7 @@
                 document.getElementById("loginScreen").style.display = "none";
                 document.getElementById("adminPanel").style.display = "block";
                 renderAdminList();
-                renderStatusList(); // Durum listesini yükle
+                renderStatusList();
             }
         }
 
@@ -147,56 +146,38 @@
         function saveSettings() {
             db.ref('announcement').set(document.getElementById("announcementInput").value.trim());
             db.ref('webhookUrl').set(document.getElementById("webhookInput").value.trim());
-            showToast("✨ Ayarlar buluta kaydedildi!");
+            showToast("✨ Ayarlar kaydedildi!");
         }
 
-        // --- YENİ: DURUM EKLEME VE SİLME FONKSİYONLARI ---
         function addStatus() {
             let name = document.getElementById("statusName").value.trim();
             let state = document.getElementById("statusState").value;
-            if(!name) { showToast("⚠ Lütfen oyun/script adı girin!"); return; }
-
+            if(!name) { showToast("⚠ Oyun adı girin!"); return; }
             db.ref('statuses').push({ name, state }).then(() => {
                 document.getElementById("statusName").value = "";
-                showToast("✨ Durum başarıyla eklendi!");
+                showToast("✨ Durum eklendi!");
             });
         }
-
-        function deleteStatus(id) {
-            db.ref('statuses/' + id).remove().then(() => showToast("🗑 Durum silindi!"));
-        }
-
+        function deleteStatus(id) { db.ref('statuses/' + id).remove().then(() => showToast("🗑 Durum silindi!")); }
         function renderStatusList() {
             db.ref('statuses').on('value', snapshot => {
-                let listContainer = document.getElementById("adminStatusList");
+                let c = document.getElementById("adminStatusList");
                 let data = snapshot.val();
-                if(!data) { listContainer.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Henüz durum yok.</p>"; return; }
-                
-                listContainer.innerHTML = "";
+                if(!data) { c.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Durum yok.</p>"; return; }
+                c.innerHTML = "";
                 Object.keys(data).forEach(id => {
                     let s = data[id];
-                    let icon = s.state === "Çalışıyor" ? "🟢" : (s.state === "Bakımda" ? "🔴" : "🟡");
-                    listContainer.innerHTML += `
-                        <div class="script-list-item">
-                            <div>
-                                <strong style="font-size:14px; color:#fff;">${s.name}</strong>
-                                <div style="font-size:11px; color:var(--text-muted);">${icon} ${s.state}</div>
-                            </div>
-                            <button class="btn btn-danger" style="padding: 6px 12px; font-size: 11px;" onclick="deleteStatus('${id}')">Sil</button>
-                        </div>
-                    `;
+                    c.innerHTML += `<div class="script-list-item"><div><strong>${s.name}</strong><br><small>${s.state}</small></div><button class="btn btn-danger" style="padding:5px 10px; font-size:11px;" onclick="deleteStatus('${id}')">Sil</button></div>`;
                 });
             });
         }
-        // ------------------------------------------------
 
         function addScript() {
             let name = document.getElementById("scriptName").value.trim();
             let desc = document.getElementById("scriptDesc").value.trim();
             let tag = document.getElementById("scriptTag").value.trim();
             let code = document.getElementById("scriptCode").value.trim();
-            if(!name || !code) { showToast("⚠ Zorunlu alanları doldurun!"); return; }
-
+            if(!name || !code) { showToast("⚠ Ad ve Kod zorunludur!"); return; }
             db.ref('scripts').push({ name, desc, tag: tag || "Genel", code }).then(() => {
                 document.getElementById("scriptName").value = "";
                 document.getElementById("scriptDesc").value = "";
@@ -205,29 +186,16 @@
                 showToast("✨ Script eklendi!");
             });
         }
-
-        function deleteScript(id) {
-            db.ref('scripts/' + id).remove().then(() => showToast("🗑 Script silindi!"));
-        }
-
+        function deleteScript(id) { db.ref('scripts/' + id).remove().then(() => showToast("🗑 Script silindi!")); }
         function renderAdminList() {
             db.ref('scripts').on('value', snapshot => {
-                let listContainer = document.getElementById("adminScriptList");
+                let c = document.getElementById("adminScriptList");
                 let data = snapshot.val();
-                if(!data) { listContainer.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Henüz script yok.</p>"; return; }
-                
-                listContainer.innerHTML = "";
+                if(!data) { c.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Script yok.</p>"; return; }
+                c.innerHTML = "";
                 Object.keys(data).forEach(id => {
                     let s = data[id];
-                    listContainer.innerHTML += `
-                        <div class="script-list-item">
-                            <div>
-                                <strong style="font-size:14px; color:#fff;">${s.name}</strong>
-                                <div style="font-size:11px; color:var(--text-muted);">${s.tag}</div>
-                            </div>
-                            <button class="btn btn-danger" style="padding: 6px 12px; font-size: 11px;" onclick="deleteScript('${id}')">Sil</button>
-                        </div>
-                    `;
+                    c.innerHTML += `<div class="script-list-item"><div><strong>${s.name}</strong><br><small>${s.tag}</small></div><button class="btn btn-danger" style="padding:5px 10px; font-size:11px;" onclick="deleteScript('${id}')">Sil</button></div>`;
                 });
             });
         }
