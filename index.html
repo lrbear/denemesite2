@@ -8,7 +8,7 @@
 </head>
 <body>
 
-    <div class="announcement-bar">🔥 v2.5 Güncellemesi Yayında! Yeni scriptler ve tema desteği eklendi.</div>
+    <div class="announcement-bar">🔥 v3.0 Güncellemesi Yayında! Canlı Admin Paneli Aktif.</div>
 
     <header>
         <div class="logo">HUB SYSTEM</div>
@@ -19,6 +19,7 @@
             <a href="status.html">Durum</a>
             <a href="network.html">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
+            <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
             <div class="theme-picker">
                 <div class="theme-dot" style="background:#6366f1;" onclick="setTheme('')" title="Mor Tema"></div>
                 <div class="theme-dot" style="background:#10b981;" onclick="setTheme('theme-green')" title="Yeşil Tema"></div>
@@ -51,9 +52,7 @@
             document.body.className = themeClass;
             localStorage.setItem('hub_theme', themeClass);
         }
-        function toggleMenu() {
-            document.querySelector('nav').classList.toggle('active');
-        }
+        function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
     </script>
 </body>
 </html>
