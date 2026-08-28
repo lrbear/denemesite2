@@ -20,7 +20,7 @@
 </head>
 <body>
 
-    <div class="announcement-bar">🔥 v3.0 Güncellemesi Yayında! Canlı Admin Paneli Aktif.</div>
+    <div class="announcement-bar" id="topAnnouncement">🔥 v3.1 Güncellemesi Yayında!</div>
 
     <header>
         <div class="logo">HUB SYSTEM</div>
@@ -46,9 +46,7 @@
         
         <input type="text" id="searchInput" class="search-bar" placeholder="Script ara..." onkeyup="filterScripts()">
 
-        <div class="card-grid" id="scriptGrid">
-            <!-- Admin panelinden eklenenler buraya otomatik yüklenecek -->
-        </div>
+        <div class="card-grid" id="scriptGrid"></div>
     </div>
 
     <div id="toast">Bildirim mesajı</div>
@@ -61,6 +59,10 @@
         window.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('hub_theme');
             if (savedTheme) document.body.className = savedTheme;
+            
+            let savedAnn = localStorage.getItem('hub_announcement');
+            if(savedAnn) document.getElementById('topAnnouncement').textContent = savedAnn;
+
             loadScripts();
         });
 
