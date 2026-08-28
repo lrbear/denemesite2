@@ -7,30 +7,38 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .key-box {
-            background: #181922;
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            padding: 40px 30px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
             max-width: 450px;
             width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
-        input {
+        input.key-input {
             width: 100%;
-            padding: 12px;
-            background: #0f1016;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
+            padding: 14px;
+            background: rgba(11, 12, 16, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             color: white;
             font-size: 16px;
             margin-bottom: 15px;
             text-align: center;
+            outline: none;
+            transition: 0.3s;
+        }
+        input.key-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">Hub v2.0</div>
+        <div class="logo">HUB SYSTEM</div>
         <nav>
             <a href="index.html">Ana Sayfa</a>
             <a href="script.html">Scriptler</a>
@@ -40,31 +48,43 @@
 
     <div class="container">
         <div class="key-box">
-            <h1>Key Sistemi</h1>
-            <p style="font-size: 15px; margin-bottom: 20px;">Scriptleri kullanabilmek için aşağıdan key alabilir veya keyini doğrulayabilirsin.</p>
+            <h1 style="font-size: 30px; margin-bottom: 10px;">Key <span>Sistemi</span></h1>
+            <p style="font-size: 14px; margin-bottom: 25px;">Scriptlere erişim sağlamak için adımları tamamlayıp key alabilir veya mevcut keyini doğrulayabilirsin.</p>
             
-            <a href="#" class="btn" style="width: 100%; margin-bottom: 15px;" onclick="generateKey(event)">Key Al (Linkvertise vb.)</a>
+            <a href="#" class="btn" style="width: 100%; justify-content: center; margin-bottom: 20px;" onclick="generateKey(event)">🔗 Key Al (Adımları Geç)</a>
             
-            <input type="text" id="userKey" placeholder="Keyinizi buraya girin...">
-            <button class="btn btn-secondary" style="width: 100%;" onclick="verifyKey()">Keyi Doğrula</button>
+            <input type="text" id="userKey" class="key-input" placeholder="Key değerini buraya yapıştır...">
+            <button class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="verifyKey()">✔ Keyi Doğrula</button>
         </div>
     </div>
 
+    <div id="toast">Bildirim mesajı</div>
     <footer>
-        <p>&copy; 2026 Tüm Hakları Saklıdır.</p>
+        <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
     </footer>
 
     <script>
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
         function generateKey(e) {
             e.preventDefault();
-            alert("Buraya reklam linki (Linkvertise vb.) yönlendirmesi ekleyebilirsin!");
+            showToast("🚀 Reklam/Link sayfasına yönlendiriliyorsunuz...");
+            // Buraya Linkvertise veya Reklam linkini koyabilirsin: window.location.href = "LINK_BURAYA";
         }
+
         function verifyKey() {
-            const key = document.getElementById('userKey').value;
-            if(key.trim() === "") {
-                alert("Lütfen bir key girin!");
+            const key = document.getElementById('userKey').value.trim();
+            if(key === "") {
+                showToast("⚠ Lütfen geçerli bir key girin!");
             } else {
-                alert("Key kontrol ediliyor: " + key);
+                showToast("✅ Key doğrulandı! Scriptleri kullanabilirsiniz.");
             }
         }
     </script>
