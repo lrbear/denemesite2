@@ -6,43 +6,10 @@
     <title>Key Sistemi - Hub</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .key-box {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            padding: 40px 30px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            max-width: 450px;
-            width: 100%;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-        }
-        input.key-input {
-            width: 100%;
-            padding: 14px;
-            background: rgba(11, 12, 16, 0.6);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: white;
-            font-size: 16px;
-            margin-bottom: 15px;
-            text-align: center;
-            outline: none;
-            transition: 0.3s;
-        }
-        input.key-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
-        }
-        .status-box {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #34d399;
-            padding: 15px;
-            border-radius: 12px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            display: none;
-        }
+        .key-box { background: var(--card-bg); backdrop-filter: blur(12px); padding: 40px 30px; border-radius: 20px; border: 1px solid var(--border); max-width: 450px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        input.key-input { width: 100%; padding: 14px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 16px; margin-bottom: 15px; text-align: center; outline: none; transition: 0.3s; }
+        input.key-input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+        .status-box { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; padding: 15px; border-radius: 12px; font-weight: 600; margin-bottom: 20px; display: none; }
     </style>
 </head>
 <body>
@@ -52,7 +19,14 @@
         <nav>
             <a href="index.html">Ana Sayfa</a>
             <a href="script.html">Scriptler</a>
+            <a href="status.html">Durum</a>
+            <a href="network.html">Projelerim</a>
             <a href="key.html" class="active">Key Sistemi</a>
+            <div class="theme-picker">
+                <div class="theme-dot" style="background:#6366f1;" onclick="setTheme('')"></div>
+                <div class="theme-dot" style="background:#10b981;" onclick="setTheme('theme-green')"></div>
+                <div class="theme-dot" style="background:#ef4444;" onclick="setTheme('theme-red')"></div>
+            </div>
         </nav>
     </header>
 
@@ -61,14 +35,10 @@
             <h1 style="font-size: 30px; margin-bottom: 10px;">Key <span>Sistemi</span></h1>
             <p style="font-size: 14px; margin-bottom: 25px;">Scriptlere erişim sağlamak için key alabilir veya doğrulayabilirsin.</p>
             
-            <!-- Aktif Key Durum Göstergesi -->
-            <div id="activeStatus" class="status-box">
-                ✔ Keyiniz Aktif! Scriptleri özgürce kullanabilirsiniz.
-            </div>
+            <div id="activeStatus" class="status-box">✔ Keyiniz Aktif! Scriptleri özgürce kullanabilirsiniz.</div>
 
             <div id="keyFormContainer">
                 <a href="#" class="btn" style="width: 100%; justify-content: center; margin-bottom: 20px;" onclick="generateKey(event)">🔗 Key Al (Adımları Geç)</a>
-                
                 <input type="text" id="userKey" class="key-input" placeholder="Key değerini buraya yapıştır...">
                 <button class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="verifyKey()">✔ Keyi Doğrula</button>
             </div>
@@ -78,48 +48,43 @@
     <div id="toast">Bildirim mesajı</div>
     <footer>
         <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
-        <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord Topluluğumuz</a>
+        <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord</a>
     </footer>
 
     <script>
-        // Sayfa açıldığında daha önceden key girilmiş mi kontrol et (LocalStorage)
         window.onload = function() {
+            const savedTheme = localStorage.getItem('hub_theme');
+            if (savedTheme) document.body.className = savedTheme;
+
             if(localStorage.getItem("hub_key_active") === "true") {
                 document.getElementById("activeStatus").style.display = "block";
                 document.getElementById("keyFormContainer").style.display = "none";
             }
         }
-
+        function setTheme(themeClass) {
+            document.body.className = themeClass;
+            localStorage.setItem('hub_theme', themeClass);
+        }
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
-
         function generateKey(e) {
             e.preventDefault();
             showToast("🚀 Reklam/Link sayfasına yönlendiriliyorsunuz...");
-            // window.location.href = "BURAYA_LINKVERTISE_LINKIN";
         }
-
         function verifyKey() {
             const key = document.getElementById('userKey').value.trim();
             if(key === "") {
                 showToast("⚠ Lütfen geçerli bir key girin!");
             } else {
-                // Key doğru kabul edildi ve tarayıcıya kaydedildi
                 localStorage.setItem("hub_key_active", "true");
                 showToast("✅ Key doğrulandı! Hoş geldiniz.");
-                
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                setTimeout(() => { location.reload(); }, 1000);
             }
         }
     </script>
-
 </body>
 </html>
