@@ -3,133 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hub - Ana Sayfa</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background-color: #0f1016;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        header {
-            background: rgba(18, 19, 26, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #7289da;
-            letter-spacing: 1px;
-        }
-        nav a {
-            color: #b9bbbe;
-            text-decoration: none;
-            margin-left: 20px;
-            transition: 0.3s;
-        }
-        nav a:hover {
-            color: #ffffff;
-        }
-        .container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-        }
-        h1 {
-            font-size: 48px;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #7289da, #99aab5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        p {
-            color: #b9bbbe;
-            font-size: 18px;
-            margin-bottom: 30px;
-        }
-        .btn-group {
-            display: flex;
-            gap: 15px;
-        }
-        .btn {
-            background-color: #5865F2;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-            text-decoration: none;
-        }
-        .btn:hover {
-            background-color: #4752c4;
-            transform: translateY(-2px);
-        }
-        .btn-secondary {
-            background-color: #2f3136;
-        }
-        .btn-secondary:hover {
-            background-color: #34373c;
-        }
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #72767d;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-    </style>
+    <title>Ana Sayfa - Hub</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header>
-        <div class="logo">Hub v1.0</div>
+        <div class="logo">Hub v2.0</div>
         <nav>
-            <a href="#">Ana Sayfa</a>
-            <a href="#">Script Al</a>
-            <a href="#">Key Sistemi</a>
-            <a href="#">İletişim</a>
+            <a href="index.html" class="active">Ana Sayfa</a>
+            <a href="script.html">Scriptler</a>
+            <a href="key.html">Key Sistemi</a>
         </nav>
     </header>
 
     <div class="container">
-        <h1>Geleceğin Script Hub Deneyimi</h1>
-        <p>En güncel scriptler, hızlı key sistemi ve özel araçlar burada.</p>
-        
-        <div class="btn-group">
-            <button class="btn" onclick="copyScript()">Scripti Kopyala</button>
-            <a href="#" class="btn btn-secondary">Key Al</a>
+        <h1>Geleceğin Script Deneyimi</h1>
+        <p>En güçlü Roblox scriptlerine ulaşmak ve key sistemini kullanmak için hemen menüyü incele.</p>
+        <div style="display: flex; gap: 15px;">
+            <a href="script.html" class="btn">Scriptlere Göz At</a>
+            <a href="key.html" class="btn btn-secondary">Key Al</a>
         </div>
     </div>
 
     <footer>
         <p>&copy; 2026 Tüm Hakları Saklıdır.</p>
     </footer>
-
-    <script>
-        function copyScript() {
-            const scriptCode = 'loadstring(game:HttpGet("BURAYA_SCRIPT_LINKI_GELECEK"))()';
-            navigator.clipboard.writeText(scriptCode);
-            alert("Script panoya kopyalandı!");
-        }
-    </script>
 
 </body>
 </html>
