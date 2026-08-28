@@ -12,6 +12,7 @@
         .key-box { background: var(--card-bg); backdrop-filter: blur(12px); padding: 40px; border-radius: 20px; border: 1px solid var(--border); max-width: 450px; width: 100%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .form-control { width: 100%; padding: 14px 18px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 15px; outline: none; margin-bottom: 20px; text-align: center; transition: 0.3s; }
         .form-control:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+        .divider { margin: 20px 0; border: none; height: 1px; background: var(--border); }
     </style>
 </head>
 <body>
@@ -34,10 +35,17 @@
     <div class="container">
         <div class="key-box">
             <h1 style="font-size: 28px; margin-bottom: 10px;">Key <span>Doğrulama</span></h1>
-            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">Özel scriptlere erişim sağlamak için geçerli anahtarınızı girin.</p>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">Özel scriptlere erişim sağlamak için anahtarınızı girin ya da yeni bir anahtar edinin.</p>
             
+            <!-- KEY GİRİŞ ALANI -->
             <input type="text" id="userKeyInput" class="form-control" placeholder="Anahtarınızı buraya yazın...">
-            <button class="btn" style="width: 100%; justify-content: center;" onclick="verifyKey()">🔑 Key'i Doğrula</button>
+            <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 10px;" onclick="verifyKey()">🔑 Key'i Doğrula</button>
+
+            <hr class="divider">
+
+            <!-- KEY AL / REKLAM BUTONU -->
+            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">Anahtarınız yok mu?</p>
+            <a href="https://www.youtube.com" target="_blank" class="btn" style="width: 100%; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border);" onclick="getKeyClicked()">🔗 Key Al (Reklama Git)</a>
         </div>
     </div>
 
@@ -61,7 +69,6 @@
             db.ref('announcement').on('value', snap => {
                 document.getElementById('topAnnouncement').textContent = snap.val() || "";
             });
-            // Eğer daha önceden key doğrulanmışsa yönlendir
             if(localStorage.getItem("hub_verified") === "true") {
                 showToast("✅ Zaten onaylısınız!");
             }
@@ -72,7 +79,7 @@
             if(!userKey) { showToast("⚠ Lütfen bir key girin!"); return; }
 
             db.ref('validKey').once('value').then(snap => {
-                let correctKey = snap.val() || "klakz2026"; // Varsayılan key
+                let correctKey = snap.val() || "klakz2026";
                 if(userKey === correctKey) {
                     localStorage.setItem("hub_verified", "true");
                     showToast("🎉 Key başarıyla doğrulandı!");
@@ -81,6 +88,11 @@
                     showToast("❌ Geçersiz anahtar!");
                 }
             });
+        }
+
+        function getKeyClicked() {
+            showToast("🔗 Reklam sayfasına yönlendiriliyorsunuz...");
+            // Buradaki linki ileride Linkvertise veya kendi reklam/kısaltma linkin ile değiştirebilirsin.
         }
 
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
