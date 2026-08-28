@@ -13,13 +13,18 @@
         .hero h1 { font-size: 48px; margin-bottom: 20px; font-weight: 800; letter-spacing: -1px; }
         .hero h1 span { background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .hero p { color: var(--text-muted); font-size: 18px; margin-bottom: 30px; line-height: 1.6; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; width: 100%; max-width: 800px; margin-top: 40px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; width: 100%; max-width: 900px; margin-top: 40px; }
         .stat-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 25px; border-radius: 16px; text-align: center; transition: 0.3s; }
         .stat-card:hover { border-color: var(--primary); transform: translateY(-3px); }
-        .stat-number { font-size: 28px; font-weight: 700; color: #fff; margin-top: 5px; }
+        .stat-number { font-size: 26px; font-weight: 700; color: #fff; margin-top: 5px; }
+        /* Tema ve Özel İmleç */
+        body { cursor: default; }
+        .theme-selector { position: fixed; bottom: 20px; right: 20px; background: var(--card-bg); border: 1px solid var(--border); padding: 10px 15px; border-radius: 30px; display: flex; gap: 10px; z-index: 999; backdrop-filter: blur(10px); }
+        .theme-dot { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid #fff; transition: 0.2s; }
+        .theme-dot:hover { transform: scale(1.2); }
     </style>
 </head>
-<body>
+<body data-theme="purple">
 
     <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
@@ -30,8 +35,10 @@
             <a href="index.html" class="active">Ana Sayfa</a>
             <a href="script.html">Scriptler</a>
             <a href="status.html">Durum</a>
+            <a href="executors.html">Executor Rehberi</a>
             <a href="network.html">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
+            <a href="changelog.html">Güncellemeler</a>
             <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
         </nav>
     </header>
@@ -41,8 +48,8 @@
             <h1>Roblox Deneyimini <span>Zirveye Taşı</span></h1>
             <p>Klakz Hub; en güncel scriptler, kesintisiz sunucu durumu takibi ve özel araçlarıyla seninle. Güvenli, hızlı ve modern arayüz.</p>
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                <a href="script.html" class="btn">🚀 Scriptlere Git</a>
-                <a href="key.html" class="btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border);">🔑 Key Al</a>
+                <a href="script.html" class="btn" onclick="playClickSound()">🚀 Scriptlere Git</a>
+                <a href="key.html" class="btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border);" onclick="playClickSound()">🔑 Key Al</a>
             </div>
         </div>
 
@@ -50,13 +57,24 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <p style="color: var(--text-muted); font-size: 13px;">Toplam Ziyaret</p>
-                <div class="stat-number" id="visitorCount">Yükleniyor...</div>
+                <div class="stat-number" id="visitorCount">...</div>
             </div>
             <div class="stat-card">
                 <p style="color: var(--text-muted); font-size: 13px;">Aktif Script</p>
-                <div class="stat-number" id="scriptCount">Yükleniyor...</div>
+                <div class="stat-number" id="scriptCount">...</div>
+            </div>
+            <div class="stat-card">
+                <p style="color: var(--text-muted); font-size: 13px;">Çevrimiçi (Online)</p>
+                <div class="stat-number" style="color: #10b981;" id="onlineCount">1</div>
             </div>
         </div>
+    </div>
+
+    <!-- TEMA DEĞİŞTİRİCİ PALETİ -->
+    <div class="theme-selector">
+        <div class="theme-dot" style="background: #6366f1;" onclick="setTheme('purple')" title="Klakz Moru"></div>
+        <div class="theme-dot" style="background: #ef4444;" onclick="setTheme('red')" title="Cyberpunk Kırmızı"></div>
+        <div class="theme-dot" style="background: #10b981;" onclick="setTheme('green')" title="Matrix Yeşili"></div>
     </div>
 
     <div id="toast">Bildirim mesajı</div>
@@ -76,34 +94,62 @@
         const db = firebase.database();
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Duyuru Dinleyicisi
+            // Kaydedilmiş tema yükleme
+            let savedTheme = localStorage.getItem("hub_theme") || "purple";
+            setTheme(savedTheme);
+
             db.ref('announcement').on('value', snap => {
                 document.getElementById('topAnnouncement').textContent = snap.val() || "";
             });
 
-            // ZİYARETÇİ SAYACI DÜZELTMESİ (Oturum Başına 1 Kez Artar)
             const visitorRef = db.ref('stats/totalVisitors');
-            
             if (!sessionStorage.getItem("visited_this_session")) {
                 sessionStorage.setItem("visited_this_session", "true");
-                // Transaction kullanarak güvenli artış (çakışmaları önler)
-                visitorRef.transaction(currentVisitors => {
-                    return (currentVisitors || 0) + 1;
-                });
+                visitorRef.transaction(c => (c || 0) + 1);
             }
-
-            // Ziyaretçi Sayısını Ekranda Göster
             visitorRef.on('value', snap => {
                 document.getElementById('visitorCount').textContent = snap.val() || 0;
             });
 
-            // Aktif Script Sayısını Göster
             db.ref('scripts').on('value', snap => {
                 let data = snap.val();
-                let count = data ? Object.keys(data).length : 0;
-                document.getElementById('scriptCount').textContent = count;
+                document.getElementById('scriptCount').textContent = data ? Object.keys(data).length : 0;
             });
         });
+
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem("hub_theme", theme);
+            // CSS renk değişkenleri güncellemesi
+            if(theme === 'red') {
+                document.documentElement.style.setProperty('--primary', '#ef4444');
+                document.documentElement.style.setProperty('--accent', '#f87171');
+            } else if(theme === 'green') {
+                document.documentElement.style.setProperty('--primary', '#10b981');
+                document.documentElement.style.setProperty('--accent', '#34d399');
+            } else {
+                document.documentElement.style.setProperty('--primary', '#6366f1');
+                document.documentElement.style.setProperty('--accent', '#a855f7');
+            }
+        }
+
+        function playClickSound() {
+            // Web Audio API ile hafif tıklama sesi
+            try {
+                let ctx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = ctx.createOscillator();
+                let gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.05);
+            } catch(e) {}
+        }
 
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
     </script>
