@@ -43,7 +43,7 @@
 
             <hr class="divider">
 
-            <!-- KEY AL / REKLAM BUTONU -->
+            <!-- KEY AL / REKLAM BUTONU (Linkvertise) -->
             <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">Anahtarınız yok mu?</p>
             <a href="https://link-hub.net/8271059/CVtOONc9i5N0" target="_blank" class="btn" style="width: 100%; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border);" onclick="getKeyClicked()">🔗 Key Al (Reklama Git)</a>
         </div>
@@ -70,7 +70,7 @@
                 document.getElementById('topAnnouncement').textContent = snap.val() || "";
             });
             if(localStorage.getItem("hub_verified") === "true") {
-                showToast("✅ Zaten onaylısınız!");
+                showToast("✅ Zaten onaylısınız! Scriptlere gidebilirsiniz.");
             }
         });
 
@@ -82,7 +82,7 @@
                 let correctKey = snap.val() || "klakz2026";
                 if(userKey === correctKey) {
                     localStorage.setItem("hub_verified", "true");
-                    showToast("🎉 Key başarıyla doğrulandı!");
+                    showToast("🎉 Key başarıyla doğrulandı! Yönlendiriliyorsunuz...");
                     setTimeout(() => { window.location.href = "script.html"; }, 1500);
                 } else {
                     showToast("❌ Geçersiz anahtar!");
