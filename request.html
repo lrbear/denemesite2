@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Script İsteği - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
@@ -42,7 +41,7 @@
         <div class="form-box">
             <input type="text" id="gameName" class="form-input" placeholder="Oyun Adı (Örn: Blox Fruits, Arsenal...)">
             <textarea id="gameDesc" class="form-input" placeholder="İstediğin özellikler neler? (Örn: Auto Farm, ESP...)" style="height: 120px; resize: none;"></textarea>
-            <button class="btn" style="justify-content: center; padding: 14px;" onclick="sendRequest()">🚀 İsteği Gönder</button>
+            <button style="background: var(--primary); border: none; color: white; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s;" onclick="sendRequest()">🚀 İsteği Gönder</button>
         </div>
     </div>
 
