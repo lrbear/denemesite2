@@ -8,7 +8,7 @@
 </head>
 <body>
 
-    <div class="announcement-bar">🔥 v3.0 Güncellemesi Yayında! Canlı Admin Paneli Aktif.</div>
+    <div class="announcement-bar" id="topAnnouncement">🔥 v3.1 Güncellemesi Yayında!</div>
 
     <header>
         <div class="logo">HUB SYSTEM</div>
@@ -31,9 +31,12 @@
     <div class="container">
         <h1>Geleceğin Script Deneyimiyle <span>Tanışın</span></h1>
         <p>Yüksek performanslı scriptler, güvenli key doğrulama altyapısı ve kesintisiz deneyim tek bir yerde toplandı.</p>
-        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-bottom: 30px;">
             <a href="script.html" class="btn">🚀 Scriptleri Keşfet</a>
             <a href="key.html" class="btn btn-secondary">🔑 Key Al / Doğrula</a>
+        </div>
+        <div style="font-size: 13px; color: var(--text-muted); background: var(--card-bg); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border);">
+            👁️ Toplam Ziyaret: <span id="visitorCount" style="color: var(--primary); font-weight: bold;">1</span>
         </div>
     </div>
 
@@ -47,7 +50,21 @@
         window.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('hub_theme');
             if (savedTheme) document.body.className = savedTheme;
+
+            // Duyuruyu yükle
+            let savedAnn = localStorage.getItem('hub_announcement');
+            if(savedAnn) document.getElementById('topAnnouncement').textContent = savedAnn;
+
+            // Ziyaretçi sayacı
+            let visits = parseInt(localStorage.getItem('hub_visitor_count') || 104);
+            if(!sessionStorage.getItem('visited_session')) {
+                visits += 1;
+                localStorage.setItem('hub_visitor_count', visits);
+                sessionStorage.setItem('visited_session', 'true');
+            }
+            document.getElementById('visitorCount').textContent = visits;
         });
+
         function setTheme(themeClass) {
             document.body.className = themeClass;
             localStorage.setItem('hub_theme', themeClass);
