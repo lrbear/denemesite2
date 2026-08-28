@@ -3,11 +3,43 @@
     "adminPassword": "admin123",
     "webhookUrl": "",
     "scripts": [
-        { "id": 1, "name": "Lumber Tycoon 2 Hub", "desc": "Otomatik kesim, sınırsız para, hızlı ışınlanma ve ESP özellikleri.", "tag": "Delta, Synapse Z", "code": "loadstring(game:HttpGet('BURAYA_SCRIPT_1'))()", "count": 0 },
-        { "id": 2, "name": "Murder Mystery 2 Script", "desc": "Rolleri görme (ESP), hız hilesi ve otomatik toplama menüsü.", "tag": "Delta, Fluxus", "code": "loadstring(game:HttpGet('BURAYA_SCRIPT_2'))()", "count": 0 }
+        {
+            "id": 1,
+            "name": "Lumber Tycoon 2 Hub",
+            "desc": "Otomatik kesim, sınırsız para, hızlı ışınlanma ve ESP özellikleri.",
+            "tag": "Delta, Synapse Z",
+            "code": "loadstring(game:HttpGet('BURAYA_SCRIPT_1'))()",
+            "count": 0
+        },
+        {
+            "id": 2,
+            "name": "Murder Mystery 2 Script",
+            "desc": "Rolleri görme (ESP), hız hilesi ve otomatik toplama menüsü.",
+            "tag": "Delta, Fluxus",
+            "code": "loadstring(game:HttpGet('BURAYA_SCRIPT_2'))()",
+            "count": 0
+        },
+        {
+            "id": 3,
+            "name": "a",
+            "desc": "a",
+            "tag": "a",
+            "code": "a",
+            "count": 0
+        }
     ],
     "statuses": [
-        { "name": "Lumber Tycoon 2 Hub", "state": "Çalışıyor" },
-        { "name": "Murder Mystery 2", "state": "Bakımda" }
+        {
+            "name": "Lumber Tycoon 2 Hub",
+            "state": "Çalışıyor"
+        },
+        {
+            "name": "Murder Mystery 2",
+            "state": "Bakımda"
+        },
+        {
+            "name": "a",
+            "state": "Çalışıyor"
+        }
     ]
 }
