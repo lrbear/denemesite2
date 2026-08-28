@@ -8,7 +8,7 @@
     <style>
         .search-bar { width: 100%; max-width: 500px; padding: 14px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 15px; margin-bottom: 30px; outline: none; transition: 0.3s; }
         .search-bar:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
-        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; margin-bottom: 40px; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; margin-bottom: 40px; }
         .card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 25px; border-radius: 16px; text-align: left; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; }
         .card:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
         .card h3 { margin-bottom: 8px; color: #fff; font-size: 20px; }
@@ -20,7 +20,7 @@
 </head>
 <body>
 
-    <div class="announcement-bar" id="topAnnouncement">🔥 v3.1 Güncellemesi Yayında!</div>
+    <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
     <header>
         <div class="logo">HUB SYSTEM</div>
@@ -56,14 +56,13 @@
     </footer>
 
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
+        let globalScripts = [];
+
+        window.addEventListener('DOMContentLoaded', async () => {
             const savedTheme = localStorage.getItem('hub_theme');
             if (savedTheme) document.body.className = savedTheme;
             
-            let savedAnn = localStorage.getItem('hub_announcement');
-            if(savedAnn) document.getElementById('topAnnouncement').textContent = savedAnn;
-
-            loadScripts();
+            await loadScriptsFromJSON();
         });
 
         function setTheme(themeClass) {
@@ -78,22 +77,34 @@
             setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
 
-        function loadScripts() {
-            const grid = document.getElementById('scriptGrid');
-            let scripts = JSON.parse(localStorage.getItem('hub_admin_scripts')) || [
-                { id: 1, name: "Lumber Tycoon 2 Hub", desc: "Otomatik kesim, sınırsız para, hızlı ışınlanma ve ESP özellikleri.", tag: "Delta, Synapse Z", code: "loadstring(game:HttpGet('BURAYA_SCRIPT_1'))()", count: 0 },
-                { id: 2, name: "Murder Mystery 2 Script", desc: "Rolleri görme (ESP), hız hilesi ve otomatik toplama menüsü.", tag: "Delta, Fluxus", code: "loadstring(game:HttpGet('BURAYA_SCRIPT_2'))()", count: 0 }
-            ];
+        async function loadScriptsFromJSON() {
+            try {
+                let res = await fetch('scripts.json?' + new Date().getTime());
+                let data = await res.json();
+                document.getElementById('topAnnouncement').textContent = data.announcement;
+                globalScripts = data.scripts || [];
+                renderGrid(globalScripts);
+            } catch(e) {
+                showToast("⚠ Scriptler yüklenirken hata oluştu!");
+            }
+        }
 
+        function renderGrid(scripts) {
+            const grid = document.getElementById('scriptGrid');
             grid.innerHTML = "";
+            if(scripts.length === 0) {
+                grid.innerHTML = "<p style='color:var(--text-muted);'>Hiç script bulunamadı.</p>";
+                return;
+            }
             scripts.forEach(s => {
+                let count = localStorage.getItem(`script_count_${s.id}`) || s.count || 0;
                 grid.innerHTML += `
                     <div class="card" data-name="${s.name.toLowerCase()} ${s.desc.toLowerCase()}">
                         <div>
                             <h3>${s.name}</h3>
                             <p>${s.desc}</p>
                             <div class="tags"><span class="tag">${s.tag}</span></div>
-                            <span class="stats-badge" id="stat-${s.id}">📥 Kopyalanma: ${s.count || 0}</span>
+                            <span class="stats-badge" id="stat-${s.id}">📥 Kopyalanma: ${count}</span>
                         </div>
                         <button class="btn" onclick="copyScript('${s.code}', ${s.id})">📋 Scripti Kopyala</button>
                     </div>
@@ -105,13 +116,10 @@
             navigator.clipboard.writeText(code);
             showToast("✨ Script panoya kopyalandı!");
             
-            let scripts = JSON.parse(localStorage.getItem('hub_admin_scripts')) || [];
-            let s = scripts.find(item => item.id === id);
-            if(s) {
-                s.count = (s.count || 0) + 1;
-                localStorage.setItem('hub_admin_scripts', JSON.stringify(scripts));
-                document.getElementById(`stat-${id}`).textContent = `📥 Kopyalanma: ${s.count}`;
-            }
+            let currentCount = parseInt(localStorage.getItem(`script_count_${id}`) || 0) + 1;
+            localStorage.setItem(`script_count_${id}`, currentCount);
+            let statEl = document.getElementById(`stat-${id}`);
+            if(statEl) statEl.textContent = `📥 Kopyalanma: ${currentCount}`;
         }
 
         function filterScripts() {
