@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Durum - Hub</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 900px; margin-bottom: 40px; }
         .status-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 22px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
@@ -12,6 +15,7 @@
         .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
         .status-working { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
         .status-maintenance { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .status-updating { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
     </style>
 </head>
 <body>
@@ -28,11 +32,6 @@
             <a href="network.html">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
             <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
-            <div class="theme-picker">
-                <div class="theme-dot" style="background:#6366f1;" onclick="setTheme('')"></div>
-                <div class="theme-dot" style="background:#10b981;" onclick="setTheme('theme-green')"></div>
-                <div class="theme-dot" style="background:#ef4444;" onclick="setTheme('theme-red')"></div>
-            </div>
         </nav>
     </header>
 
@@ -43,30 +42,31 @@
         <div class="status-grid" id="statusGrid"></div>
     </div>
 
-    <div id="toast">Bildirim mesajı</div>
     <footer>
         <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
-        <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord</a>
     </footer>
 
     <script>
-        window.addEventListener('DOMContentLoaded', async () => {
-            const savedTheme = localStorage.getItem('hub_theme');
-            if (savedTheme) document.body.className = savedTheme;
+        const firebaseConfig = {
+            apiKey: "BURAYA_API_KEY", authDomain: "BURAYA_AUTH_DOMAIN",
+            databaseURL: "BURAYA_DATABASE_URL", projectId: "BURAYA_PROJECT_ID",
+            storageBucket: "BURAYA_STORAGE_BUCKET", messagingSenderId: "BURAYA_MESSAGING_SENDER_ID", appId: "BURAYA_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-            try {
-                let res = await fetch('scripts.json?' + new Date().getTime());
-                let data = await res.json();
-                document.getElementById('topAnnouncement').textContent = data.announcement;
-                
-                renderStatuses(data.statuses || []);
-            } catch(e) {
-                document.getElementById('topAnnouncement').textContent = "🔥 v3.2 Güncellemesi Yayında!";
-                renderStatuses([
-                    { name: "Lumber Tycoon 2 Hub", state: "Çalışıyor" },
-                    { name: "Murder Mystery 2", state: "Bakımda" }
-                ]);
-            }
+        window.addEventListener('DOMContentLoaded', () => {
+            // Duyuru Dinle
+            db.ref('announcement').on('value', snap => {
+                document.getElementById('topAnnouncement').textContent = snap.val() || "🔥 Durum Sistemi Aktif!";
+            });
+
+            // Durumları Gerçek Zamanlı Dinle
+            db.ref('statuses').on('value', snap => {
+                let data = snap.val();
+                let statusesArray = data ? Object.keys(data).map(key => data[key]) : [];
+                renderStatuses(statusesArray);
+            });
         });
 
         function renderStatuses(statuses) {
@@ -78,9 +78,16 @@
             }
 
             statuses.forEach(item => {
-                let isWorking = item.state === "Çalışıyor";
-                let badgeClass = isWorking ? "status-working" : "status-maintenance";
-                let icon = isWorking ? "🟢" : "🔴";
+                let badgeClass = "status-maintenance";
+                let icon = "🔴";
+                
+                if(item.state === "Çalışıyor") {
+                    badgeClass = "status-working";
+                    icon = "🟢";
+                } else if(item.state === "Güncelleniyor") {
+                    badgeClass = "status-updating";
+                    icon = "🟡";
+                }
 
                 grid.innerHTML += `
                     <div class="status-card">
@@ -94,11 +101,6 @@
                     </div>
                 `;
             });
-        }
-
-        function setTheme(themeClass) {
-            document.body.className = themeClass;
-            localStorage.setItem('hub_theme', themeClass);
         }
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
     </script>
