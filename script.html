@@ -9,7 +9,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        .filter-container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 900px; margin-bottom: 30px; }
+        .filter-container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 900px; margin-bottom: 20px; }
         .search-input { width: 100%; padding: 14px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 15px; outline: none; transition: 0.3s; }
         .search-input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
         .tag-filters { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -17,14 +17,26 @@
         .tag-btn:hover, .tag-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         .script-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 900px; margin-bottom: 40px; }
-        .script-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 25px; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.3s; }
+        .script-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 25px; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.3s; position: relative; }
         .script-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2); }
-        .tag { background: rgba(99, 102, 241, 0.15); color: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; margin-bottom: 12px; }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .tag { background: rgba(99, 102, 241, 0.15); color: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .status-badge { font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
+        .status-working { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-patch { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .fav-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+        .fav-btn.active { color: #f59e0b; }
+
+        /* MODAL (Kod Önizleme Penceresi) */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: var(--card-bg); border: 1px solid var(--border); width: 100%; max-width: 600px; padding: 30px; border-radius: 16px; position: relative; }
+        .code-preview-box { background: rgba(11, 12, 16, 0.8); border: 1px solid var(--border); padding: 15px; border-radius: 8px; color: #34d399; font-family: monospace; font-size: 13px; max-height: 250px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; margin: 15px 0; }
     </style>
 </head>
 <body>
 
-    <!-- KİRİŞ KONTROLÜ: Key girilmediyse kullanıcı scriptleri göremez, Key sayfasına atılır -->
     <script>
         if(localStorage.getItem("hub_verified") !== "true") {
             alert("⚠ Scriptlere erişmek için önce Key doğrulaması yapmalısınız!");
@@ -41,8 +53,10 @@
             <a href="index.html">Ana Sayfa</a>
             <a href="script.html" class="active">Scriptler</a>
             <a href="status.html">Durum</a>
+            <a href="executors.html">Executor Rehberi</a>
             <a href="network.html">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
+            <a href="changelog.html">Güncellemeler</a>
             <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
         </nav>
     </header>
@@ -51,15 +65,31 @@
         <h1 style="font-size: 36px; margin-top: 20px;">Özel <span>Scriptler</span></h1>
         <p style="margin-bottom: 25px;">Admin panelinden eklenen en güncel scriptlere buradan ulaşabilirsin.</p>
 
-        <!-- ARAMA VE FİLTRELEME ÇUBUĞU -->
+        <!-- FİLTRE VE FAVORİ SEKMELERİ -->
         <div class="filter-container">
             <input type="text" id="searchInput" class="search-input" placeholder="🔍 Script veya oyun adı ara..." onkeyup="filterScripts()">
-            <div class="tag-filters" id="tagFilters">
-                <button class="tag-btn active" onclick="filterByTag('Tümü', this)">Tümü</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div class="tag-filters" id="tagFilters">
+                    <button class="tag-btn active" onclick="filterByTag('Tümü', this)">Tümü</button>
+                    <button class="tag-btn" onclick="filterByTag('Favoriler', this)">⭐ Favorilerim</button>
+                </div>
             </div>
         </div>
 
         <div class="script-grid" id="scriptGrid"></div>
+    </div>
+
+    <!-- KOD ÖNİZLEME MODALI -->
+    <div class="modal-overlay" id="codeModal">
+        <div class="modal-content">
+            <h2 id="modalTitle" style="margin-bottom: 10px; font-size: 20px; color:#fff;">Script Önizleme</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Aşağıdaki script kodunu inceleyebilir veya direkt kopyalayabilirsin.</p>
+            <div class="code-preview-box" id="modalCodeText"></div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" style="flex: 1; justify-content: center;" id="modalCopyBtn">📋 Kopyala</button>
+                <button class="btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border);" onclick="closeModal()">Kapat</button>
+            </div>
+        </div>
     </div>
 
     <div id="toast">Bildirim mesajı</div>
@@ -95,14 +125,14 @@
         });
 
         function updateTagButtons() {
-            let tags = ["Tümü"];
+            let tags = ["Tümü", "Favorilerim"];
             allScripts.forEach(s => {
                 if(s.tag && !tags.includes(s.tag)) tags.push(s.tag);
             });
             const container = document.getElementById('tagFilters');
             container.innerHTML = "";
             tags.forEach(t => {
-                container.innerHTML += `<button class="tag-btn ${activeTag === t ? 'active' : ''}" onclick="filterByTag('${t}', this)">${t}</button>`;
+                container.innerHTML += `<button class="tag-btn ${activeTag === t ? 'active' : ''}" onclick="filterByTag('${t}', this)">${t === 'Favorilerim' ? '⭐ Favorilerim' : t}</button>`;
             });
         }
 
@@ -115,8 +145,15 @@
 
         function filterScripts() {
             let query = document.getElementById('searchInput').value.toLowerCase();
+            let favorites = JSON.parse(localStorage.getItem("hub_favorites") || "[]");
+
             let filtered = allScripts.filter(s => {
-                let matchesTag = (activeTag === "Tümü" || s.tag === activeTag);
+                let matchesTag = true;
+                if(activeTag === "Favorilerim") {
+                    matchesTag = favorites.includes(s.id);
+                } else if(activeTag !== "Tümü") {
+                    matchesTag = (s.tag === activeTag);
+                }
                 let matchesSearch = s.name.toLowerCase().includes(query) || (s.desc && s.desc.toLowerCase().includes(query));
                 return matchesTag && matchesSearch;
             });
@@ -131,44 +168,78 @@
                 return;
             }
 
+            let favorites = JSON.parse(localStorage.getItem("hub_favorites") || "[]");
+
             scripts.forEach((item, index) => {
+                let isFav = favorites.includes(item.id);
                 let btnId = "copyBtn_" + index;
                 let encodedCode = encodeURIComponent(item.code);
+                let status = item.status || "Çalışıyor";
+                let statusClass = status === "Çalışıyor" ? "status-working" : "status-patch";
 
                 grid.innerHTML += `
                     <div class="script-card">
                         <div>
-                            <span class="tag">${item.tag || 'Genel'}</span>
+                            <div class="card-header">
+                                <span class="tag">${item.tag || 'Genel'}</span>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <span class="status-badge ${statusClass}">🟢 ${status}</span>
+                                    <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${item.id}')" title="Favorilere Ekle/Çıkar">⭐</button>
+                                </div>
+                            </div>
                             <h3 style="color:#fff; font-size:20px; margin-bottom:8px;">${item.name}</h3>
                             <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">${item.desc || 'Açıklama girilmemiş.'}</p>
                         </div>
-                        <button id="${btnId}" class="btn" style="width:100%; justify-content:center;" onclick="copyScript('${encodedCode}', '${btnId}')">📋 Kopyala</button>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); flex: 1; justify-content: center; font-size: 13px;" onclick="openModal('${item.name}', '${encodedCode}')">👁️ İncele</button>
+                            <button id="${btnId}" class="btn" style="flex: 1; justify-content: center; font-size: 13px;" onclick="copyScript('${encodedCode}', '${btnId}')">📋 Kopyala</button>
+                        </div>
                     </div>
                 `;
             });
+        }
+
+        function toggleFavorite(id) {
+            let favorites = JSON.parse(localStorage.getItem("hub_favorites") || "[]");
+            if(favorites.includes(id)) {
+                favorites = favorites.filter(fav => fav !== id);
+                showToast("⭐ Favorilerden çıkarıldı.");
+            } else {
+                favorites.push(id);
+                showToast("⭐ Favorilere eklendi!");
+            }
+            localStorage.setItem("hub_favorites", JSON.stringify(favorites));
+            filterScripts();
+        }
+
+        function openModal(name, encodedCode) {
+            document.getElementById('modalTitle').textContent = name + " - Kod Önizleme";
+            document.getElementById('modalCodeText').textContent = decodeURIComponent(encodedCode);
+            document.getElementById('modalCopyBtn').onclick = function() {
+                copyScript(encodedCode, 'modalCopyBtn');
+                closeModal();
+            };
+            document.getElementById('codeModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('codeModal').style.display = 'none';
         }
 
         function copyScript(encodedCode, btnId) {
             let code = decodeURIComponent(encodedCode);
             navigator.clipboard.writeText(code).then(() => {
                 showToast("📋 Script panoya kopyalandı!");
-                
                 let btn = document.getElementById(btnId);
+                if(!btn) return;
                 let timeLeft = 5;
-                
                 btn.disabled = true;
-                btn.style.opacity = "0.5";
-                btn.style.cursor = "not-allowed";
-                
                 let timer = setInterval(() => {
-                    btn.textContent = `⏳ Bekleyin (${timeLeft}s)`;
+                    btn.textContent = `⏳ (${timeLeft}s)`;
                     timeLeft--;
-                    
                     if(timeLeft < 0) {
                         clearInterval(timer);
                         btn.disabled = false;
-                        btn.style.opacity = "1";
-                        btn.style.cursor = "pointer";
                         btn.textContent = "📋 Kopyala";
                     }
                 }, 1000);
