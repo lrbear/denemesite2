@@ -42,7 +42,6 @@
             <p style="color: var(--text-muted); font-size: 14px;">Scriptlere erişmek için lütfen key giriniz. Girilen key <strong>24 saat</strong> boyunca geçerli olacaktır.</p>
             <input type="text" id="keyInput" class="key-input" placeholder="Key'inizi buraya girin...">
             <button class="btn-main" onclick="verifyKey()">Doğrula ve Devam Et</button>
-            <a href="https://linkvertise.com" target="_blank" style="color: var(--primary); font-size: 13px; text-decoration: none;">Linkvertise ile Key Al (Örnek)</a>
         </div>
     </div>
 
@@ -68,15 +67,17 @@
 
         function verifyKey() {
             let inputKey = document.getElementById('keyInput').value.trim();
-            if(inputKey === "KLAKZ-2026-VIP" || inputKey.length > 4) {
+            
+            // Eğer key boş değilse veya belirli bir kelimeyse direkt kabul et
+            if(inputKey.length > 0) {
                 let expireTime = new Date().getTime() + (24 * 60 * 60 * 1000);
                 localStorage.setItem('klakz_verified', 'true');
                 localStorage.setItem('klakz_expire', expireTime);
 
-                showToast("✅ Key başarıyla doğrulandı! Yönlendiriliyorsunuz...");
-                setTimeout(() => { window.location.href = "script.html"; }, 1500);
+                showToast("✅ Key başarıyla doğrulandı!");
+                setTimeout(() => { window.location.href = "script.html"; }, 1000);
             } else {
-                showToast("❌ Geçersiz Key!");
+                showToast("❌ Lütfen bir key girin!");
             }
         }
 
