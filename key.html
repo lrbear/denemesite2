@@ -1,40 +1,108 @@
-<!-- key.html içerisindeki script kısmını bununla güncelleyebilirsin -->
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAJuMNSxWFuNTO0xGriUo8QoaC9g-ie8WM",
-        authDomain: "klakz-database.firebaseapp.com",
-        databaseURL: "https://klakz-database-default-rtdb.firebaseio.com",
-        projectId: "klakz-database",
-        storageBucket: "klakz-database.firebasestorage.app",
-        messagingSenderId: "437747915577",
-        appId: "1:437747915577:web:f4ffa2f76d6d7a923966e8"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Sistemi - Klakz Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        .key-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 40px; width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 20px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+        .key-input { width: 100%; padding: 14px 18px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 15px; outline: none; text-align: center; letter-spacing: 1px; }
+        .key-input:focus { border-color: var(--primary); }
+        .key-btn { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; border: none; padding: 14px 20px; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.3s ease; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+        .key-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6); }
+    </style>
+</head>
+<body>
 
-    function verifyKey() {
-        let userKey = document.getElementById('keyInput').value.trim();
-        if(!userKey) { alert("Lütfen bir key girin!"); return; }
+    <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
-        db.ref('validKeys').once('value').then(snapshot => {
-            let keysObj = snapshot.val();
-            let isValid = false;
+    <header>
+        <div class="logo">KLAKZ HUB</div>
+        <div class="hamburger" onclick="toggleMenu()">☰</div>
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="script.html">Scriptler</a>
+            <a href="status.html">Durum</a>
+            <a href="executors.html">Executor Rehberi</a>
+            <a href="network.html">Projelerim</a>
+            <a href="key.html" class="active">Key Sistemi</a>
+            <a href="changelog.html">Güncellemeler</a>
+            <a href="request.html">İstek</a>
+            <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
+        </nav>
+    </header>
 
-            if(keysObj) {
-                Object.values(keysObj).forEach(k => {
-                    if(k === userKey) isValid = true;
-                });
-            }
+    <div class="container" style="align-items: center; justify-content: center; min-height: 70vh;">
+        <div class="key-box">
+            <h1 style="font-size: 28px; margin-bottom: 5px;">Erişim <span>Key Sistemi</span></h1>
+            <p style="color: var(--text-muted); font-size: 13px;">Siteye giriş yapabilmek için admin panelinden aldığınız geçerli key'i girin.</p>
+            
+            <input type="text" id="keyInput" class="key-input" placeholder="Key'i buraya girin...">
+            <button class="key-btn" onclick="verifyKey()">Key'i Doğrula</button>
+            
+            <p style="color: var(--text-muted); font-size: 11px; margin-top: 5px;">Key doğrulanınca 24 saat boyunca tekrar istemez.</p>
+        </div>
+    </div>
 
-            if(isValid) {
-                let expireTime = new Date().getTime() + (24 * 60 * 60 * 1000); // 24 saat geçerli
-                localStorage.setItem('klakz_verified', 'true');
-                localStorage.setItem('klakz_expire', expireTime);
-                alert("✅ Key doğrulandı! Ana sayfaya yönlendiriliyorsunuz.");
-                window.location.href = 'index.html';
-            } else {
-                alert("❌ Geçersiz veya süresi dolmuş key!");
-            }
+    <div id="toast">Bildirim mesajı</div>
+    <footer><p>&copy; 2026 Klakz Hub. Tüm hakları saklıdır.</p></footer>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJuMNSxWFuNTO0xGriUo8QoaC9g-ie8WM",
+            authDomain: "klakz-database.firebaseapp.com",
+            databaseURL: "https://klakz-database-default-rtdb.firebaseio.com",
+            projectId: "klakz-database",
+            storageBucket: "klakz-database.firebasestorage.app",
+            messagingSenderId: "437747915577",
+            appId: "1:437747915577:web:f4ffa2f76d6d7a923966e8"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref('announcement').on('value', snap => {
+            let val = snap.val() || "";
+            document.getElementById('topAnnouncement').textContent = val;
         });
-    }
-</script>
+
+        function verifyKey() {
+            let userKey = document.getElementById('keyInput').value.trim();
+            if(!userKey) { showToast("❌ Lütfen bir key girin!"); return; }
+
+            db.ref('validKeys').once('value').then(snapshot => {
+                let keysObj = snapshot.val();
+                let isValid = false;
+
+                if(keysObj) {
+                    Object.values(keysObj).forEach(k => {
+                        if(k === userKey) isValid = true;
+                    });
+                }
+
+                if(isValid) {
+                    let expireTime = new Date().getTime() + (24 * 60 * 60 * 1000); // 24 saat
+                    localStorage.setItem('klakz_verified', 'true');
+                    localStorage.setItem('klakz_expire', expireTime);
+                    showToast("✅ Key doğrulandı! Yönlendiriliyorsunuz...");
+                    setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+                } else {
+                    showToast("❌ Geçersiz veya süresi dolmuş key!");
+                }
+            }).catch(error => {
+                showToast("⚠️ Bağlantı hatası oluştu.");
+            });
+        }
+
+        function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+    </script>
+</body>
+</html>
