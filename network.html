@@ -3,12 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projelerim - Hub</title>
+    <title>Projelerim - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        let isVerified = localStorage.getItem('klakz_verified');
+        let expireTime = localStorage.getItem('klakz_expire');
+        let now = new Date().getTime();
+        if (!isVerified || !expireTime || now > parseInt(expireTime)) {
+            localStorage.removeItem('klakz_verified');
+            localStorage.removeItem('klakz_expire');
+            window.location.href = 'key.html';
+        }
+    </script>
     <style>
-        .project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 900px; margin-bottom: 40px; }
-        .project-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 25px; border-radius: 16px; text-align: left; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; }
-        .project-card:hover { border-color: var(--primary); transform: translateY(-5px); }
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
+        .project-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 25px; display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(10px); transition: 0.3s; }
+        .project-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .btn-project { background: var(--primary); color: white; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 700; text-align: center; display: block; transition: 0.2s; }
+        .btn-project:hover { background: var(--primary-hover); }
     </style>
 </head>
 <body>
@@ -16,69 +30,72 @@
     <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
 
     <header>
-        <div class="logo">HUB SYSTEM</div>
+        <div class="logo">KLAKZ HUB</div>
         <div class="hamburger" onclick="toggleMenu()">☰</div>
         <nav>
             <a href="index.html">Ana Sayfa</a>
             <a href="script.html">Scriptler</a>
             <a href="status.html">Durum</a>
+            <a href="executors.html">Executor Rehberi</a>
             <a href="network.html" class="active">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
+            <a href="changelog.html">Güncellemeler</a>
+            <a href="request.html">İstek</a>
             <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
-            <div class="theme-picker">
-                <div class="theme-dot" style="background:#6366f1;" onclick="setTheme('')"></div>
-                <div class="theme-dot" style="background:#10b981;" onclick="setTheme('theme-green')"></div>
-                <div class="theme-dot" style="background:#ef4444;" onclick="setTheme('theme-red')"></div>
-            </div>
         </nav>
     </header>
 
-    <div class="container" style="justify-content: flex-start;">
-        <h1 style="font-size: 36px; margin-top: 20px;">Geliştirdiğim <span>Projeler</span></h1>
-        <p style="margin-bottom: 30px;">Kendi geliştirdiğim diğer web araçlarını, oyun modlarını ve yazılımları buradan inceleyebilirsin.</p>
+    <div class="container" style="align-items: center;">
+        <h1 style="font-size: 36px; margin-bottom: 10px;">Geliştirici <span>Projelerim</span></h1>
+        <p style="color: var(--text-muted); margin-bottom: 30px; text-align: center;">Admin paneli üzerinden eklenen özel projelerim ve yazılımlarım.</p>
 
-        <div class="project-grid">
-            <div class="project-card">
-                <div>
-                    <h3 style="color:#fff; font-size:20px; margin-bottom:8px;">ForgeScript Hub</h3>
-                    <p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Özel kullanıcı panelli, gelişmiş veritabanı entegrasyonlu web script yönetim aracı.</p>
-                </div>
-                <a href="#" class="btn" style="text-align:center; justify-content:center;">Projeyi İncele</a>
-            </div>
-            <div class="project-card">
-                <div>
-                    <h3 style="color:#fff; font-size:20px; margin-bottom:8px;">Klakz Lua Executor Tools</h3>
-                    <p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">Roblox oyunları için özel arayüz tasarımları ve script yönetim aracı.</p>
-                </div>
-                <a href="#" class="btn" style="text-align:center; justify-content:center;">Projeyi İncele</a>
-            </div>
+        <div class="projects-grid" id="projectsGrid">
+            <p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Projeler yükleniyor...</p>
         </div>
     </div>
 
     <div id="toast">Bildirim mesajı</div>
-    <footer>
-        <p>&copy; 2026 Hub System. Tüm hakları saklıdır.</p>
-        <a href="https://discord.gg/senindiscordlinkin" target="_blank" class="discord-badge">💬 Discord</a>
-    </footer>
+    <footer><p>&copy; 2026 Klakz Hub. Tüm hakları saklıdır.</p></footer>
 
     <script>
-        window.addEventListener('DOMContentLoaded', async () => {
-            const savedTheme = localStorage.getItem('hub_theme');
-            if (savedTheme) document.body.className = savedTheme;
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJuMNSxWFuNTO0xGriUo8QoaC9g-ie8WM",
+            authDomain: "klakz-database.firebaseapp.com",
+            databaseURL: "https://klakz-database-default-rtdb.firebaseio.com",
+            projectId: "klakz-database",
+            storageBucket: "klakz-database.firebasestorage.app",
+            messagingSenderId: "437747915577",
+            appId: "1:437747915577:web:f4ffa2f76d6d7a923966e8"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-            try {
-                let res = await fetch('scripts.json?' + new Date().getTime());
-                let data = await res.json();
-                document.getElementById('topAnnouncement').textContent = data.announcement;
-            } catch(e) {
-                document.getElementById('topAnnouncement').textContent = "🔥 v3.2 Güncellemesi Yayında!";
-            }
+        db.ref('announcement').on('value', snap => {
+            document.getElementById('topAnnouncement').textContent = snap.val() || "";
         });
 
-        function setTheme(themeClass) {
-            document.body.className = themeClass;
-            localStorage.setItem('hub_theme', themeClass);
-        }
+        db.ref('projects').on('value', snap => {
+            const data = snap.val();
+            const grid = document.getElementById('projectsGrid');
+            grid.innerHTML = "";
+
+            if(!data) {
+                grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Henüz proje eklenmemiş.</p>';
+                return;
+            }
+
+            Object.keys(data).forEach(key => {
+                let p = data[key];
+                grid.innerHTML += `
+                    <div class="project-card">
+                        <strong style="color: white; font-size: 18px;">${p.title}</strong>
+                        <p style="color: var(--text-muted); font-size: 13px; flex: 1;">${p.desc || "Açıklama belirtilmemiş."}</p>
+                        <a href="${p.link}" target="_blank" class="btn-project">Projeyi İncele / Git</a>
+                    </div>
+                `;
+            });
+        });
+
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
     </script>
 </body>
