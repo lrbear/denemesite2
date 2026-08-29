@@ -8,14 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script>
-        let isVerified = localStorage.getItem('klakz_verified');
-        let expireTime = localStorage.getItem('klakz_expire');
-        let now = new Date().getTime();
-        if (!isVerified || !expireTime || now > parseInt(expireTime)) {
-            localStorage.removeItem('klakz_verified');
-            localStorage.removeItem('klakz_expire');
-            window.location.href = 'key.html';
-        }
+        if (!sessionStorage.getItem('klakz_verified')) { window.location.href = 'key.html'; }
     </script>
     <style>
         .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
@@ -47,14 +40,13 @@
 
     <div class="container" style="align-items: center;">
         <h1 style="font-size: 36px; margin-bottom: 10px;">Geliştirici <span>Projelerim</span></h1>
-        <p style="color: var(--text-muted); margin-bottom: 30px; text-align: center;">Admin paneli üzerinden eklenen özel projelerim ve yazılımlarım.</p>
+        <p style="color: var(--text-muted); margin-bottom: 30px; text-align: center;">Admin paneli üzerinden eklenen özel projelerim.</p>
 
         <div class="projects-grid" id="projectsGrid">
             <p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Projeler yükleniyor...</p>
         </div>
     </div>
 
-    <div id="toast">Bildirim mesajı</div>
     <footer><p>&copy; 2026 Klakz Hub. Tüm hakları saklıdır.</p></footer>
 
     <script>
@@ -70,29 +62,15 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        db.ref('announcement').on('value', snap => {
-            document.getElementById('topAnnouncement').textContent = snap.val() || "";
-        });
+        db.ref('announcement').on('value', snap => { document.getElementById('topAnnouncement').textContent = snap.val() || ""; });
 
         db.ref('projects').on('value', snap => {
             const data = snap.val();
             const grid = document.getElementById('projectsGrid');
             grid.innerHTML = "";
-
-            if(!data) {
-                grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Henüz proje eklenmemiş.</p>';
-                return;
-            }
-
-            Object.keys(data).forEach(key => {
-                let p = data[key];
-                grid.innerHTML += `
-                    <div class="project-card">
-                        <strong style="color: white; font-size: 18px;">${p.title}</strong>
-                        <p style="color: var(--text-muted); font-size: 13px; flex: 1;">${p.desc || "Açıklama belirtilmemiş."}</p>
-                        <a href="${p.link}" target="_blank" class="btn-project">Projeyi İncele / Git</a>
-                    </div>
-                `;
+            if(!data) { grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Henüz proje eklenmemiş.</p>'; return; }
+            Object.values(data).forEach(p => {
+                grid.innerHTML += `<div class="project-card"><strong style="color: white; font-size: 18px;">${p.title}</strong><p style="color: var(--text-muted); font-size: 13px; flex: 1;">${p.desc || "Açıklama yok."}</p><a href="${p.link}" target="_blank" class="btn-project">Projeyi İncele / Git</a></div>`;
             });
         });
 
