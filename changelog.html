@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Güncellemeler - Klakz Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        // 24 Saatlik Süre Denetimi (Güvenlik Koruması)
+        let isVerified = localStorage.getItem('klakz_verified');
+        let expireTime = localStorage.getItem('klakz_expire');
+        let now = new Date().getTime();
+        if (!isVerified || !expireTime || now > parseInt(expireTime)) {
+            localStorage.removeItem('klakz_verified');
+            localStorage.removeItem('klakz_expire');
+            window.location.href = 'key.html';
+        }
+    </script>
+    <style>
+        .changelog-container { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 800px; }
+        .changelog-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 25px; backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 10px; transition: 0.3s; }
+        .changelog-card:hover { border-color: var(--primary); }
+        .changelog-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .version-tag { background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+        .changelog-date { color: var(--text-muted); font-size: 13px; }
+        .changelog-list { list-style-type: disc; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; color: var(--text-main); font-size: 14px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="announcement-bar" id="topAnnouncement">Yükleniyor...</div>
+
+    <header>
+        <div class="logo">KLAKZ HUB</div>
+        <div class="hamburger" onclick="toggleMenu()">☰</div>
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="script.html">Scriptler</a>
+            <a href="status.html">Durum</a>
+            <a href="executors.html">Executor Rehberi</a>
+            <a href="network.html">Projelerim</a>
+            <a href="key.html">Key Sistemi</a>
+            <a href="changelog.html" class="active">Güncellemeler</a>
+            <a href="faq.html">SSS</a>
+            <a href="request.html">İstek</a>
+            <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
+        </nav>
+    </header>
+
+    <div class="container" style="align-items: center;">
+        <h1 style="font-size: 36px; margin-bottom: 10px;">Güncelleme <span>Notları</span></h1>
+        <p style="color: var(--text-muted); margin-bottom: 30px; text-align: center;">Klakz Hub üzerindeki yenilikleri, eklenen scriptleri ve performans iyileştirmelerini buradan takip edebilirsin.</p>
+
+        <div class="changelog-container">
+            
+            <div class="changelog-card">
+                <div class="changelog-header">
+                    <span class="version-tag">v2.5 - Kararlı Sürüm</span>
+                    <span class="changelog-date">Ağustos 2026</span>
+                </div>
+                <ul class="changelog-list">
+                    <li>24 saatlik süre sınırlı akıllı key doğrulama sistemi eklendi.</li>
+                    <li>Tüm sayfalarda üst menü bütünlüğü ve mobil uyumluluk optimize edildi.</li>
+                    <li>Arama geçmişi ve hızlı etiket filtreleme özellikleri getirildi.</li>
+                    <li>Firebase Realtime Database entegrasyonu kararlaştırıldı.</li>
+                </ul>
+            </div>
+
+            <div class="changelog-card">
+                <div class="changelog-header">
+                    <span class="version-tag">v2.0 - Arayüz Yenilemesi</span>
+                    <span class="changelog-date">Temmuz 2026</span>
+                </div>
+                <ul class="changelog-list">
+                    <li>Modern cam efekti (glassmorphism) tasarımı entegre edildi.</li>
+                    <li>Patlak script bildirim sistemi aktif edildi.</li>
+                    <li>Mobil cihazlar için hamburger menü hatası giderildi.</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="toast">Bildirim mesajı</div>
+    <footer><p>&copy; 2026 Klakz Hub. Tüm hakları saklıdır.</p></footer>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJuMNSxWFuNTO0xGriUo8QoaC9g-ie8WM",
+            authDomain: "klakz-database.firebaseapp.com",
+            databaseURL: "https://klakz-database-default-rtdb.firebaseio.com",
+            projectId: "klakz-database",
+            storageBucket: "klakz-database.firebasestorage.app",
+            messagingSenderId: "437747915577",
+            appId: "1:437747915577:web:f4ffa2f76d6d7a923966e8"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref('announcement').on('value', snap => {
+            document.getElementById('topAnnouncement').textContent = snap.val() || "";
+        });
+
+        function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
+    </script>
+</body>
+</html>
