@@ -67,6 +67,23 @@
             </div>
         </div>
 
+        <!-- Executor Rehberi Yönetimi -->
+        <div class="admin-section">
+            <h3>🚀 Yeni Executor Ekle / Rehber</h3>
+            <input type="text" id="execName" class="admin-input" placeholder="Executor Adı (Örn: Delta, Hydrogen)">
+            <input type="text" id="execDesc" class="admin-input" placeholder="Kısa Açıklama">
+            <input type="text" id="execLink" class="admin-input" placeholder="İndirme Linki URL">
+            <input type="text" id="execImage" class="admin-input" placeholder="Logo / Görsel URL">
+            <button class="admin-btn" onclick="addExecutor()">Executor Ekle</button>
+        </div>
+
+        <div class="admin-section">
+            <h3>📂 Mevcut Executor Listesi</h3>
+            <div id="adminExecutorsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">Executorlar yükleniyor...</p>
+            </div>
+        </div>
+
         <!-- Durum (Status) Yönetimi -->
         <div class="admin-section">
             <h3>🟢 Executor / Sistem Durumu Ekle</h3>
@@ -117,15 +134,12 @@
             document.getElementById('announcementInput').value = val;
         });
 
-        // Scriptleri Listele ve Silme Özelliği
+        // Scriptleri Listele ve Sil
         db.ref('scripts').on('value', snap => {
             const data = snap.val();
             const list = document.getElementById('adminScriptsList');
             list.innerHTML = "";
-            if(!data) {
-                list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı script yok.</p>';
-                return;
-            }
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı script yok.</p>'; return; }
             Object.keys(data).forEach(key => {
                 let s = data[key];
                 list.innerHTML += `
@@ -137,15 +151,29 @@
             });
         });
 
-        // Durumları Listele ve Silme Özelliği
+        // Executor Listele ve Sil
+        db.ref('executors').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('adminExecutorsList');
+            list.innerHTML = "";
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı executor yok.</p>'; return; }
+            Object.keys(data).forEach(key => {
+                let e = data[key];
+                list.innerHTML += `
+                    <div class="list-item">
+                        <strong style="color: white;">${e.name}</strong>
+                        <button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteExecutor('${key}')">Sil</button>
+                    </div>
+                `;
+            });
+        });
+
+        // Durumları Listele ve Sil
         db.ref('statuses').on('value', snap => {
             const data = snap.val();
             const list = document.getElementById('adminStatusList');
             list.innerHTML = "";
-            if(!data) {
-                list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı durum verisi yok.</p>';
-                return;
-            }
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı durum verisi yok.</p>'; return; }
             Object.keys(data).forEach(key => {
                 let st = data[key];
                 list.innerHTML += `
@@ -165,10 +193,7 @@
             const data = snap.val();
             const list = document.getElementById('requestsList');
             list.innerHTML = "";
-            if(!data) {
-                list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Henüz gelen bir istek yok.</p>';
-                return;
-            }
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Henüz gelen bir istek yok.</p>'; return; }
             Object.keys(data).forEach(key => {
                 let req = data[key];
                 list.innerHTML += `
@@ -204,9 +229,24 @@
             });
         }
 
-        function deleteScript(key) {
-            db.ref('scripts/' + key).remove().then(() => { showToast("🗑️ Script silindi."); });
+        function deleteScript(key) { db.ref('scripts/' + key).remove().then(() => { showToast("🗑️ Script silindi."); }); }
+
+        function addExecutor() {
+            let name = document.getElementById('execName').value.trim();
+            let desc = document.getElementById('execDesc').value.trim();
+            let link = document.getElementById('execLink').value.trim();
+            let image = document.getElementById('execImage').value.trim();
+            if(!name || !link) { showToast("❌ Executor adı ve indirme linki zorunludur!"); return; }
+            db.ref('executors').push({ name, desc, link, image }).then(() => {
+                showToast("✅ Executor eklendi!");
+                document.getElementById('execName').value = "";
+                document.getElementById('execDesc').value = "";
+                document.getElementById('execLink').value = "";
+                document.getElementById('execImage').value = "";
+            });
         }
+
+        function deleteExecutor(key) { db.ref('executors/' + key).remove().then(() => { showToast("🗑️ Executor silindi."); }); }
 
         function addStatus() {
             let name = document.getElementById('statusName').value.trim();
@@ -218,13 +258,8 @@
             });
         }
 
-        function deleteStatus(key) {
-            db.ref('statuses/' + key).remove().then(() => { showToast("🗑️ Durum silindi."); });
-        }
-
-        function deleteRequest(key) {
-            db.ref('requests/' + key).remove().then(() => { showToast("🗑️ İstek silindi."); });
-        }
+        function deleteStatus(key) { db.ref('statuses/' + key).remove().then(() => { showToast("🗑️ Durum silindi."); }); }
+        function deleteRequest(key) { db.ref('requests/' + key).remove().then(() => { showToast("🗑️ İstek silindi."); }); }
 
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
         function showToast(message) {
