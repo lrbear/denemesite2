@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <style>
         .admin-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 25px; width: 100%; max-width: 800px; margin-bottom: 25px; backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 15px; }
         .admin-input { width: 100%; padding: 12px 18px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 10px; color: white; font-size: 14px; outline: none; }
@@ -16,6 +17,8 @@
         .admin-btn-danger { background: linear-gradient(135deg, var(--danger), #dc2626); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
         .admin-btn-danger:hover { box-shadow: 0 6px 16px rgba(239, 68, 68, 0.5); }
         .list-item { background: rgba(11, 12, 16, 0.4); border: 1px solid var(--border); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .file-upload-box { border: 2px dashed var(--border); padding: 20px; border-radius: 10px; text-align: center; background: rgba(11, 12, 16, 0.3); cursor: pointer; transition: 0.3s; }
+        .file-upload-box:hover { border-color: var(--primary); }
     </style>
 </head>
 <body>
@@ -31,6 +34,7 @@
             <a href="status.html">Durum</a>
             <a href="executors.html">Executor Rehberi</a>
             <a href="network.html">Projelerim</a>
+            <a href="downloads.html">Uygulamalar</a>
             <a href="key.html">Key Sistemi</a>
             <a href="changelog.html">Güncellemeler</a>
             <a href="request.html">İstek</a>
@@ -76,6 +80,34 @@
             </div>
         </div>
 
+        <!-- Uygulama / Dosya İndirme Yönetimi (GÜNCELLENDİ) -->
+        <div class="admin-section">
+            <h3>📥 Siteye Dosya Yükle / Uygulama Ekle (`downloads.html`)</h3>
+            <input type="text" id="appName" class="admin-input" placeholder="Uygulama / Dosya Adı">
+            <input type="text" id="appDesc" class="admin-input" placeholder="Kısa Açıklama">
+            <input type="text" id="appVersion" class="admin-input" placeholder="Sürüm (Örn: v1.0)">
+            
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 13px; color: var(--text-muted);">Seçenek A: Bilgisayardan Dosya Yükle (.zip, .exe, .rar vb.)</label>
+                <input type="file" id="appFile" class="admin-input" style="padding: 10px;">
+            </div>
+
+            <div style="text-align: center; color: var(--text-muted); font-size: 13px; font-weight: bold;">--- VEYA ---</div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 13px; color: var(--text-muted);">Seçenek B: Harici İndirme Linki Yapıştır</label>
+                <input type="text" id="appLink" class="admin-input" placeholder="https://... (Dosya seçmezsen bu link kullanılır)">
+            </div>
+
+            <button class="admin-btn" id="uploadAppBtn" onclick="addApp()">Uygulamayı Yayınla</button>
+        </div>
+        <div class="admin-section">
+            <h3>📂 Mevcut Uygulamalar Listesi</h3>
+            <div id="adminAppsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">Uygulamalar yükleniyor...</p>
+            </div>
+        </div>
+
         <!-- Script Yönetimi -->
         <div class="admin-section">
             <h3>➕ Yeni Script Ekle</h3>
@@ -111,7 +143,7 @@
         <!-- Durum Yönetimi -->
         <div class="admin-section">
             <h3>🟢 Sistem Durumu Ekle</h3>
-            <input type="text" id="statusName" class="admin-input" placeholder="Servis Adı (Örn: Delta Executor)">
+            <input type="text" id="statusName" class="admin-input" placeholder="Servis Adı">
             <select id="statusState" class="admin-input">
                 <option value="Çalışıyor (Working)">Çalışıyor (Working)</option>
                 <option value="Güncelleniyor (Updating)">Güncelleniyor (Updating)</option>
@@ -130,7 +162,7 @@
         <div class="admin-section">
             <h3>📥 Kullanıcı Script İstekleri</h3>
             <div id="requestsList" style="display: flex; flex-direction: column; gap: 10px;">
-                <p style="color: var(--text-muted); text-align: center;">İstekler yükleniyor...</p>
+                <p style="color: var(--text-muted); text-align: center;">İstek yok.</p>
             </div>
         </div>
     </div>
@@ -150,6 +182,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const storage = firebase.storage();
 
         db.ref('announcement').on('value', snap => {
             let val = snap.val() || "";
@@ -174,6 +207,16 @@
             if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı proje yok.</p>'; return; }
             Object.keys(data).forEach(id => {
                 list.innerHTML += `<div class="list-item"><strong style="color: white;">${data[id].title}</strong><button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteData('projects', '${id}')">Sil</button></div>`;
+            });
+        });
+
+        db.ref('downloads').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('adminAppsList');
+            list.innerHTML = "";
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı uygulama yok.</p>'; return; }
+            Object.keys(data).forEach(id => {
+                list.innerHTML += `<div class="list-item"><strong style="color: white;">${data[id].name} <span style="font-size: 12px; color: var(--primary);">(${data[id].version})</span></strong><button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteData('downloads', '${id}')">Sil</button></div>`;
             });
         });
 
@@ -233,6 +276,40 @@
             let link = document.getElementById('projLink').value.trim();
             if(!title || !link) { showToast("❌ Proje adı ve linki zorunludur!"); return; }
             db.ref('projects').push({ title, desc, link }).then(() => { showToast("✅ Proje eklendi!"); document.getElementById('projTitle').value=""; document.getElementById('projDesc').value=""; document.getElementById('projLink').value=""; });
+        }
+
+        function addApp() {
+            let name = document.getElementById('appName').value.trim();
+            let desc = document.getElementById('appDesc').value.trim();
+            let link = document.getElementById('appLink').value.trim();
+            let version = document.getElementById('appVersion').value.trim() || "v1.0";
+            let fileInput = document.getElementById('appFile');
+            
+            if(!name) { showToast("❌ Lütfen uygulama adı girin!"); return; }
+
+            if(fileInput.files.length > 0) {
+                let file = fileInput.files[0];
+                let storageRef = storage.ref('uploads/' + Date.now() + '_' + file.name);
+                showToast("⏳ Dosya yükleniyor, lütfen bekleyin...");
+                
+                storageRef.put(file).then(snapshot => {
+                    snapshot.ref.getDownloadURL().then(downloadURL => {
+                        db.ref('downloads').push({ name, desc, link: downloadURL, version, fileName: file.name, fileSize: (file.size / (1024*1024)).toFixed(2) + " MB" }).then(() => {
+                            showToast("✅ Dosya başarıyla yüklendi ve yayınlandı!");
+                            document.getElementById('appName').value=""; document.getElementById('appDesc').value=""; document.getElementById('appLink').value=""; document.getElementById('appVersion').value=""; fileInput.value="";
+                        });
+                    });
+                }).catch(error => {
+                    showToast("❌ Dosya yükleme hatası: " + error.message);
+                });
+            } else if(link) {
+                db.ref('downloads').push({ name, desc, link, version }).then(() => {
+                    showToast("✅ Uygulama eklendi!");
+                    document.getElementById('appName').value=""; document.getElementById('appDesc').value=""; document.getElementById('appLink').value=""; document.getElementById('appVersion').value="";
+                });
+            } else {
+                showToast("❌ Lütfen bir dosya seçin ya da harici bir link girin!");
+            }
         }
 
         function addScript() {
