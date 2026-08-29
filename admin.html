@@ -50,6 +50,36 @@
             <button class="admin-btn" onclick="updateAnnouncement()">Duyuruyu Güncelle</button>
         </div>
 
+        <!-- 1. Key (Anahtar) Yönetim Sistemi -->
+        <div class="admin-section">
+            <h3>🔑 Yeni Erişim Key'i Oluştur</h3>
+            <input type="text" id="keyInput" class="admin-input" placeholder="Örn: KLAKZ-VIP-2026 veya otomatik bırak">
+            <button class="admin-btn" onclick="generateKey()">Key Üret ve Kaydet</button>
+        </div>
+
+        <div class="admin-section">
+            <h3>📋 Aktif Key Listesi ve Yönetimi</h3>
+            <div id="adminKeysList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">Keyler yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- 2. Proje / "Projelerim" Yönetimi -->
+        <div class="admin-section">
+            <h3>💻 Yeni Proje Ekle (`network.html`)</h3>
+            <input type="text" id="projTitle" class="admin-input" placeholder="Proje Adı">
+            <input type="text" id="projDesc" class="admin-input" placeholder="Proje Açıklaması">
+            <input type="text" id="projLink" class="admin-input" placeholder="GitHub / İnceleme Linki URL">
+            <button class="admin-btn" onclick="addProject()">Projeyi Ekle</button>
+        </div>
+
+        <div class="admin-section">
+            <h3>📂 Mevcut Projeler Listesi</h3>
+            <div id="adminProjectsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">Projeler yükleniyor...</p>
+            </div>
+        </div>
+
         <!-- Script Ekleme & Yönetimi -->
         <div class="admin-section">
             <h3>➕ Yeni Script Ekle</h3>
@@ -70,7 +100,7 @@
         <!-- Executor Rehberi Yönetimi -->
         <div class="admin-section">
             <h3>🚀 Yeni Executor Ekle / Rehber</h3>
-            <input type="text" id="execName" class="admin-input" placeholder="Executor Adı (Örn: Delta, Hydrogen)">
+            <input type="text" id="execName" class="admin-input" placeholder="Executor Adı">
             <input type="text" id="execDesc" class="admin-input" placeholder="Kısa Açıklama">
             <input type="text" id="execLink" class="admin-input" placeholder="İndirme Linki URL">
             <input type="text" id="execImage" class="admin-input" placeholder="Logo / Görsel URL">
@@ -87,7 +117,7 @@
         <!-- Durum (Status) Yönetimi -->
         <div class="admin-section">
             <h3>🟢 Executor / Sistem Durumu Ekle</h3>
-            <input type="text" id="statusName" class="admin-input" placeholder="Örn: Delta Executor / Roblox Servisleri">
+            <input type="text" id="statusName" class="admin-input" placeholder="Örn: Delta Executor">
             <select id="statusState" class="admin-input">
                 <option value="Çalışıyor (Working)">Çalışıyor (Working)</option>
                 <option value="Güncelleniyor (Updating)">Güncelleniyor (Updating)</option>
@@ -134,7 +164,41 @@
             document.getElementById('announcementInput').value = val;
         });
 
-        // Scriptleri Listele ve Sil
+        // 1. Key Listele ve Sil
+        db.ref('validKeys').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('adminKeysList');
+            list.innerHTML = "";
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı key bulunmuyor.</p>'; return; }
+            Object.keys(data).forEach(keyId => {
+                let kVal = data[keyId];
+                list.innerHTML += `
+                    <div class="list-item">
+                        <strong style="color: var(--accent); font-family: monospace;">${kVal}</strong>
+                        <button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteKey('${keyId}')">Sil</button>
+                    </div>
+                `;
+            });
+        });
+
+        // 2. Projeleri Listele ve Sil
+        db.ref('projects').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('adminProjectsList');
+            list.innerHTML = "";
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı proje yok.</p>'; return; }
+            Object.keys(data).forEach(key => {
+                let p = data[key];
+                list.innerHTML += `
+                    <div class="list-item">
+                        <strong style="color: white;">${p.title}</strong>
+                        <button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteProject('${key}')">Sil</button>
+                    </div>
+                `;
+            });
+        });
+
+        // Script Listele
         db.ref('scripts').on('value', snap => {
             const data = snap.val();
             const list = document.getElementById('adminScriptsList');
@@ -151,7 +215,7 @@
             });
         });
 
-        // Executor Listele ve Sil
+        // Executor Listele
         db.ref('executors').on('value', snap => {
             const data = snap.val();
             const list = document.getElementById('adminExecutorsList');
@@ -168,7 +232,7 @@
             });
         });
 
-        // Durumları Listele ve Sil
+        // Durum Listele
         db.ref('statuses').on('value', snap => {
             const data = snap.val();
             const list = document.getElementById('adminStatusList');
@@ -188,7 +252,7 @@
             });
         });
 
-        // İstekleri Listele
+        // İstek Listele
         db.ref('requests').on('value', snap => {
             const data = snap.val();
             const list = document.getElementById('requestsList');
@@ -214,6 +278,30 @@
             db.ref('announcement').set(text).then(() => { showToast("✅ Duyuru güncellendi!"); });
         }
 
+        function generateKey() {
+            let customKey = document.getElementById('keyInput').value.trim();
+            let newKey = customKey !== "" ? customKey : "KLAKZ-" + Math.random().toString(36).substring(2, 8).toUpperCase() + "-" + Math.floor(1000 + Math.random() * 9000);
+            db.ref('validKeys').push(newKey).then(() => {
+                showToast("🔑 Key başarıyla üretildi!");
+                document.getElementById('keyInput').value = "";
+            });
+        }
+        function deleteKey(keyId) { db.ref('validKeys/' + keyId).remove().then(() => { showToast("🗑️ Key silindi."); }); }
+
+        function addProject() {
+            let title = document.getElementById('projTitle').value.trim();
+            let desc = document.getElementById('projDesc').value.trim();
+            let link = document.getElementById('projLink').value.trim();
+            if(!title || !link) { showToast("❌ Proje adı ve linki zorunludur!"); return; }
+            db.ref('projects').push({ title, desc, link }).then(() => {
+                showToast("✅ Proje eklendi!");
+                document.getElementById('projTitle').value = "";
+                document.getElementById('projDesc').value = "";
+                document.getElementById('projLink').value = "";
+            });
+        }
+        function deleteProject(key) { db.ref('projects/' + key).remove().then(() => { showToast("🗑️ Proje silindi."); }); }
+
         function addScript() {
             let title = document.getElementById('scriptTitle').value.trim();
             let desc = document.getElementById('scriptDesc').value.trim();
@@ -228,7 +316,6 @@
                 document.getElementById('scriptCode').value = "";
             });
         }
-
         function deleteScript(key) { db.ref('scripts/' + key).remove().then(() => { showToast("🗑️ Script silindi."); }); }
 
         function addExecutor() {
@@ -236,7 +323,7 @@
             let desc = document.getElementById('execDesc').value.trim();
             let link = document.getElementById('execLink').value.trim();
             let image = document.getElementById('execImage').value.trim();
-            if(!name || !link) { showToast("❌ Executor adı ve indirme linki zorunludur!"); return; }
+            if(!name || !link) { showToast("❌ Executor adı ve linki zorunludur!"); return; }
             db.ref('executors').push({ name, desc, link, image }).then(() => {
                 showToast("✅ Executor eklendi!");
                 document.getElementById('execName').value = "";
@@ -245,7 +332,6 @@
                 document.getElementById('execImage').value = "";
             });
         }
-
         function deleteExecutor(key) { db.ref('executors/' + key).remove().then(() => { showToast("🗑️ Executor silindi."); }); }
 
         function addStatus() {
@@ -257,7 +343,6 @@
                 document.getElementById('statusName').value = "";
             });
         }
-
         function deleteStatus(key) { db.ref('statuses/' + key).remove().then(() => { showToast("🗑️ Durum silindi."); }); }
         function deleteRequest(key) { db.ref('requests/' + key).remove().then(() => { showToast("🗑️ İstek silindi."); }); }
 
