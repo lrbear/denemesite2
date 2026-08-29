@@ -12,7 +12,6 @@
         .admin-input { width: 100%; padding: 12px 18px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 10px; color: white; font-size: 14px; outline: none; }
         .admin-input:focus { border-color: var(--primary); }
         
-        /* Modern Admin Butonları */
         .admin-btn { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s ease; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); text-align: center; }
         .admin-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5); }
         .admin-btn-danger { background: linear-gradient(135deg, var(--danger), #dc2626); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
@@ -36,7 +35,6 @@
             <a href="network.html">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
             <a href="changelog.html">Güncellemeler</a>
-            <a href="faq.html">SSS</a>
             <a href="request.html">İstek</a>
             <a href="admin.html" class="active" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
         </nav>
@@ -52,7 +50,7 @@
             <button class="admin-btn" onclick="updateAnnouncement()">Duyuruyu Güncelle</button>
         </div>
 
-        <!-- Script Ekleme -->
+        <!-- Script Ekleme & Yönetimi -->
         <div class="admin-section">
             <h3>➕ Yeni Script Ekle</h3>
             <input type="text" id="scriptTitle" class="admin-input" placeholder="Oyun / Script Adı">
@@ -60,6 +58,32 @@
             <input type="text" id="scriptImage" class="admin-input" placeholder="Görsel URL (İsteğe bağlı)">
             <textarea id="scriptCode" class="admin-input" style="resize: vertical; min-height: 80px;" placeholder="Lua Script Kodu..."></textarea>
             <button class="admin-btn" onclick="addScript()">Scripti Yayınla</button>
+        </div>
+
+        <div class="admin-section">
+            <h3>📋 Mevcut Scriptleri Yönet / Sil</h3>
+            <div id="adminScriptsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">Scriptler yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- Durum (Status) Yönetimi -->
+        <div class="admin-section">
+            <h3>🟢 Executor / Sistem Durumu Ekle</h3>
+            <input type="text" id="statusName" class="admin-input" placeholder="Örn: Delta Executor / Roblox Servisleri">
+            <select id="statusState" class="admin-input">
+                <option value="Çalışıyor (Working)">Çalışıyor (Working)</option>
+                <option value="Güncelleniyor (Updating)">Güncelleniyor (Updating)</option>
+                <option value="Patlak (Patched)">Patlak (Patched)</option>
+            </select>
+            <button class="admin-btn" onclick="addStatus()">Durum Ekle / Güncelle</button>
+        </div>
+
+        <div class="admin-section">
+            <h3>📊 Mevcut Durum Listesi</h3>
+            <div id="adminStatusList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">Durumlar yükleniyor...</p>
+            </div>
         </div>
 
         <!-- Gelen İstekler Listesi -->
@@ -93,17 +117,58 @@
             document.getElementById('announcementInput').value = val;
         });
 
-        // İstekleri Dinle ve Listele
+        // Scriptleri Listele ve Silme Özelliği
+        db.ref('scripts').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('adminScriptsList');
+            list.innerHTML = "";
+            if(!data) {
+                list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı script yok.</p>';
+                return;
+            }
+            Object.keys(data).forEach(key => {
+                let s = data[key];
+                list.innerHTML += `
+                    <div class="list-item">
+                        <strong style="color: white;">${s.title}</strong>
+                        <button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteScript('${key}')">Sil</button>
+                    </div>
+                `;
+            });
+        });
+
+        // Durumları Listele ve Silme Özelliği
+        db.ref('statuses').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('adminStatusList');
+            list.innerHTML = "";
+            if(!data) {
+                list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı durum verisi yok.</p>';
+                return;
+            }
+            Object.keys(data).forEach(key => {
+                let st = data[key];
+                list.innerHTML += `
+                    <div class="list-item">
+                        <div>
+                            <strong style="color: white;">${st.name}</strong>
+                            <span style="font-size: 12px; color: var(--primary); margin-left: 10px;">[${st.state}]</span>
+                        </div>
+                        <button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteStatus('${key}')">Sil</button>
+                    </div>
+                `;
+            });
+        });
+
+        // İstekleri Listele
         db.ref('requests').on('value', snap => {
             const data = snap.val();
             const list = document.getElementById('requestsList');
             list.innerHTML = "";
-
             if(!data) {
                 list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Henüz gelen bir istek yok.</p>';
                 return;
             }
-
             Object.keys(data).forEach(key => {
                 let req = data[key];
                 list.innerHTML += `
@@ -121,9 +186,7 @@
 
         function updateAnnouncement() {
             let text = document.getElementById('announcementInput').value;
-            db.ref('announcement').set(text).then(() => {
-                showToast("✅ Duyuru güncellendi!");
-            });
+            db.ref('announcement').set(text).then(() => { showToast("✅ Duyuru güncellendi!"); });
         }
 
         function addScript() {
@@ -131,14 +194,9 @@
             let desc = document.getElementById('scriptDesc').value.trim();
             let image = document.getElementById('scriptImage').value.trim();
             let code = document.getElementById('scriptCode').value.trim();
-
-            if(!title || !code) {
-                showToast("❌ Oyun adı ve script kodu zorunludur!");
-                return;
-            }
-
+            if(!title || !code) { showToast("❌ Oyun adı ve script kodu zorunludur!"); return; }
             db.ref('scripts').push({ title, desc, image, code }).then(() => {
-                showToast("✅ Script başarıyla eklendi!");
+                showToast("✅ Script eklendi!");
                 document.getElementById('scriptTitle').value = "";
                 document.getElementById('scriptDesc').value = "";
                 document.getElementById('scriptImage').value = "";
@@ -146,10 +204,26 @@
             });
         }
 
-        function deleteRequest(key) {
-            db.ref('requests/' + key).remove().then(() => {
-                showToast("🗑️ İstek silindi.");
+        function deleteScript(key) {
+            db.ref('scripts/' + key).remove().then(() => { showToast("🗑️ Script silindi."); });
+        }
+
+        function addStatus() {
+            let name = document.getElementById('statusName').value.trim();
+            let state = document.getElementById('statusState').value;
+            if(!name) { showToast("❌ İsim boş olamaz!"); return; }
+            db.ref('statuses').push({ name, state }).then(() => {
+                showToast("✅ Durum eklendi!");
+                document.getElementById('statusName').value = "";
             });
+        }
+
+        function deleteStatus(key) {
+            db.ref('statuses/' + key).remove().then(() => { showToast("🗑️ Durum silindi."); });
+        }
+
+        function deleteRequest(key) {
+            db.ref('requests/' + key).remove().then(() => { showToast("🗑️ İstek silindi."); });
         }
 
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
