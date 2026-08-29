@@ -5,12 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Executor Rehberi - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        let isVerified = localStorage.getItem('klakz_verified');
+        let expireTime = localStorage.getItem('klakz_expire');
+        let now = new Date().getTime();
+        if (!isVerified || !expireTime || now > parseInt(expireTime)) {
+            localStorage.removeItem('klakz_verified');
+            localStorage.removeItem('klakz_expire');
+            window.location.href = 'key.html';
+        }
+    </script>
     <style>
-        .exec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; width: 100%; max-width: 900px; margin-bottom: 40px; }
-        .exec-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 25px; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; }
+        .exec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
+        .exec-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 25px; display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(10px); transition: 0.3s; }
+        .exec-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .exec-logo { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; background: #1a1c23; }
+        .btn-download { background: var(--primary); color: white; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 700; text-align: center; display: block; transition: 0.2s; }
+        .btn-download:hover { background: var(--primary-hover); }
     </style>
 </head>
 <body>
@@ -28,47 +41,17 @@
             <a href="network.html">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
             <a href="changelog.html">Güncellemeler</a>
+            <a href="request.html">İstek</a>
             <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
         </nav>
     </header>
 
-    <div class="container" style="justify-content: flex-start;">
-        <h1 style="font-size: 36px; margin-top: 20px;">Executor <span>Durumları</span></h1>
-        <p style="margin-bottom: 30px; color: var(--text-muted);">Roblox için popüler executor'ların anlık çalışma durumları ve platform bilgileri.</p>
+    <div class="container" style="align-items: center;">
+        <h1 style="font-size: 36px; margin-bottom: 10px;">Executor <span>Rehberi</span></h1>
+        <p style="color: var(--text-muted); margin-bottom: 30px; text-align: center;">Güvenilir executorları incele ve resmi adreslerinden indir.</p>
 
-        <div class="exec-grid">
-            <div class="exec-card">
-                <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h3 style="color:#fff; font-size: 20px;">Delta Executor</h3>
-                        <span style="color: #10b981; font-size: 12px; background: rgba(16,185,129,0.15); padding: 4px 8px; border-radius: 6px;">🟢 Çalışıyor</span>
-                    </div>
-                    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Platform: Mobil (Android) & PC Emulator</p>
-                </div>
-                <a href="#" target="_blank" class="btn" style="justify-content: center; font-size: 13px;">Resmi Siteye Git</a>
-            </div>
-
-            <div class="exec-card">
-                <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h3 style="color:#fff; font-size: 20px;">Fluxus</h3>
-                        <span style="color: #10b981; font-size: 12px; background: rgba(16,185,129,0.15); padding: 4px 8px; border-radius: 6px;">🟢 Çalışıyor</span>
-                    </div>
-                    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Platform: Mobil & PC</p>
-                </div>
-                <a href="#" target="_blank" class="btn" style="justify-content: center; font-size: 13px;">Resmi Siteye Git</a>
-            </div>
-
-            <div class="exec-card">
-                <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h3 style="color:#fff; font-size: 20px;">Hydrogen</h3>
-                        <span style="color: #f59e0b; font-size: 12px; background: rgba(245,158,11,0.15); padding: 4px 8px; border-radius: 6px;">🟡 Güncelleniyor</span>
-                    </div>
-                    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Platform: Mobil (iOS/Android)</p>
-                </div>
-                <a href="#" target="_blank" class="btn" style="justify-content: center; font-size: 13px;">Resmi Siteye Git</a>
-            </div>
+        <div class="exec-grid" id="execGrid">
+            <p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Executorlar yükleniyor...</p>
         </div>
     </div>
 
@@ -88,9 +71,36 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        window.addEventListener('DOMContentLoaded', () => {
-            db.ref('announcement').on('value', snap => {
-                document.getElementById('topAnnouncement').textContent = snap.val() || "";
+        db.ref('announcement').on('value', snap => {
+            document.getElementById('topAnnouncement').textContent = snap.val() || "";
+        });
+
+        db.ref('executors').on('value', snap => {
+            const data = snap.val();
+            const grid = document.getElementById('execGrid');
+            grid.innerHTML = "";
+
+            if(!data) {
+                grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Henüz executor eklenmemiş.</p>';
+                return;
+            }
+
+            Object.keys(data).forEach(key => {
+                let e = data[key];
+                let img = e.image && e.image.trim() !== "" ? e.image : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=60";
+                grid.innerHTML += `
+                    <div class="exec-card">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <img src="${img}" class="exec-logo" alt="Logo">
+                            <div>
+                                <strong style="color: white; font-size: 18px;">${e.name}</strong>
+                                <p style="color: var(--text-muted); font-size: 12px; margin-top: 2px;">Güvenli ve Güncel</p>
+                            </div>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 13px; flex: 1;">${e.desc || "Açıklama belirtilmemiş."}</p>
+                        <a href="${e.link}" target="_blank" class="btn-download">İndir / Git</a>
+                    </div>
+                `;
             });
         });
 
