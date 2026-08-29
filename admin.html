@@ -5,16 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Paneli - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        .admin-box { background: var(--card-bg); backdrop-filter: blur(12px); padding: 35px; border-radius: 20px; border: 1px solid var(--border); max-width: 600px; width: 100%; text-align: left; box-shadow: 0 20px 40px rgba(0,0,0,0.5); margin-bottom: 30px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
-        .form-control { width: 100%; padding: 12px 16px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 10px; color: white; font-size: 14px; outline: none; transition: 0.3s; }
-        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); }
-        .script-list-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border); }
+        .admin-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 25px; width: 100%; max-width: 800px; margin-bottom: 25px; backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 15px; }
+        .admin-input { width: 100%; padding: 12px 18px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 10px; color: white; font-size: 14px; outline: none; }
+        .admin-input:focus { border-color: var(--primary); }
+        
+        /* Modern Admin Butonları */
+        .admin-btn { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s ease; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); text-align: center; }
+        .admin-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5); }
+        .admin-btn-danger { background: linear-gradient(135deg, var(--danger), #dc2626); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+        .admin-btn-danger:hover { box-shadow: 0 6px 16px rgba(239, 68, 68, 0.5); }
+
+        .list-item { background: rgba(11, 12, 16, 0.4); border: 1px solid var(--border); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     </style>
 </head>
 <body>
@@ -28,60 +32,41 @@
             <a href="index.html">Ana Sayfa</a>
             <a href="script.html">Scriptler</a>
             <a href="status.html">Durum</a>
+            <a href="executors.html">Executor Rehberi</a>
             <a href="network.html">Projelerim</a>
             <a href="key.html">Key Sistemi</a>
+            <a href="changelog.html">Güncellemeler</a>
+            <a href="faq.html">SSS</a>
+            <a href="request.html">İstek</a>
             <a href="admin.html" class="active" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
         </nav>
     </header>
 
-    <div class="container" style="justify-content: flex-start;">
-        <!-- GİRİŞ EKRANI -->
-        <div id="loginScreen" class="admin-box" style="max-width: 400px; text-align: center; margin-top: 50px;">
-            <h1 style="font-size: 26px; margin-bottom: 10px;">Admin <span>Girişi</span></h1>
-            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">İlk girişte şifreniz: <b>admin123</b></p>
-            <input type="password" id="adminPass" class="form-control" placeholder="Admin şifresi..." style="text-align: center; margin-bottom: 15px;">
-            <button class="btn" style="width: 100%; justify-content: center;" onclick="checkLogin()">Giriş Yap</button>
+    <div class="container" style="align-items: center;">
+        <h1 style="font-size: 36px; margin-bottom: 25px;">Yönetici <span>Paneli</span></h1>
+
+        <!-- Duyuru Yönetimi -->
+        <div class="admin-section">
+            <h3>📢 Site Duyurusu Düzenle</h3>
+            <input type="text" id="announcementInput" class="admin-input" placeholder="Yeni duyuru metnini yazın...">
+            <button class="admin-btn" onclick="updateAnnouncement()">Duyuruyu Güncelle</button>
         </div>
 
-        <!-- PANEL EKRANI -->
-        <div id="adminPanel" style="display: none; width: 100%; max-width: 600px;">
-            <div class="admin-box">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h1 style="font-size: 22px; margin: 0;">🛠️ Panel <span>Ayarları</span></h1>
-                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 11px;" onclick="logout()">Çıkış Yap</button>
-                </div>
-                
-                <div class="form-group"><label>Üst Şerit Duyuru Metni</label><input type="text" id="announcementInput" class="form-control"></div>
-                <div class="form-group"><label>Discord Webhook URL</label><input type="text" id="webhookInput" class="form-control" placeholder="https://discord.com/api/webhooks/..."></div>
-                <div class="form-group"><label>Aktif Key Sistemi Şifresi</label><input type="text" id="keyInput" class="form-control" placeholder="klakz2026"></div>
-                <button class="btn" style="width: 100%; justify-content: center;" onclick="saveSettings()">✨ Ayarları Kaydet</button>
-            </div>
+        <!-- Script Ekleme -->
+        <div class="admin-section">
+            <h3>➕ Yeni Script Ekle</h3>
+            <input type="text" id="scriptTitle" class="admin-input" placeholder="Oyun / Script Adı">
+            <input type="text" id="scriptDesc" class="admin-input" placeholder="Kısa Açıklama">
+            <input type="text" id="scriptImage" class="admin-input" placeholder="Görsel URL (İsteğe bağlı)">
+            <textarea id="scriptCode" class="admin-input" style="resize: vertical; min-height: 80px;" placeholder="Lua Script Kodu..."></textarea>
+            <button class="admin-btn" onclick="addScript()">Scripti Yayınla</button>
+        </div>
 
-            <!-- DURUM YÖNETİMİ -->
-            <div class="admin-box">
-                <h1 style="font-size: 22px; margin-bottom: 20px;">🟢 Durum <span>Yönetimi</span></h1>
-                <div class="form-group"><label>Oyun / Script Adı</label><input type="text" id="statusName" class="form-control" placeholder="Murder Mystery 2"></div>
-                <div class="form-group">
-                    <label>Anlık Durum</label>
-                    <select id="statusState" class="form-control" style="background: rgba(11, 12, 16, 0.6); color: white;">
-                        <option value="Çalışıyor">🟢 Çalışıyor</option>
-                        <option value="Bakımda">🔴 Bakımda</option>
-                        <option value="Güncelleniyor">🟡 Güncelleniyor</option>
-                    </select>
-                </div>
-                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 20px;" onclick="addStatus()">⚡ Durum Ekle / Güncelle</button>
-                <div id="adminStatusList"></div>
-            </div>
-
-            <!-- SCRIPT YÖNETİMİ -->
-            <div class="admin-box">
-                <h1 style="font-size: 22px; margin-bottom: 20px;">⚙️ Script <span>Yönetimi</span></h1>
-                <div class="form-group"><label>Script Adı</label><input type="text" id="scriptName" class="form-control" placeholder="Blox Fruits"></div>
-                <div class="form-group"><label>Açıklama</label><input type="text" id="scriptDesc" class="form-control" placeholder="Otomatik farm..."></div>
-                <div class="form-group"><label>Etiket</label><input type="text" id="scriptTag" class="form-control" placeholder="Delta, Fluxus"></div>
-                <div class="form-group"><label>Kod</label><input type="text" id="scriptCode" class="form-control" placeholder="loadstring(...)()"></div>
-                <button class="btn" style="width: 100%; justify-content: center; margin-bottom: 20px;" onclick="addScript()">🚀 Script Ekle (Discord'a Bildir)</button>
-                <div id="adminScriptList"></div>
+        <!-- Gelen İstekler Listesi -->
+        <div class="admin-section">
+            <h3>📥 Kullanıcı Script İstekleri</h3>
+            <div id="requestsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">İstekler yükleniyor...</p>
             </div>
         </div>
     </div>
@@ -102,128 +87,68 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        window.onload = function() {
-            db.ref('adminPassword').once('value').then(snap => {
-                if(!snap.exists()) db.ref('adminPassword').set("admin123");
-            });
-            db.ref('validKey').once('value').then(snap => {
-                if(!snap.exists()) db.ref('validKey').set("klakz2026");
-            });
+        db.ref('announcement').on('value', snap => {
+            let val = snap.val() || "";
+            document.getElementById('topAnnouncement').textContent = val;
+            document.getElementById('announcementInput').value = val;
+        });
 
-            db.ref('announcement').on('value', snap => {
-                document.getElementById('topAnnouncement').textContent = snap.val() || "";
-                document.getElementById('announcementInput').value = snap.val() || "";
-            });
-            db.ref('webhookUrl').on('value', snap => {
-                document.getElementById('webhookInput').value = snap.val() || "";
-            });
-            db.ref('validKey').on('value', snap => {
-                document.getElementById('keyInput').value = snap.val() || "";
-            });
+        // İstekleri Dinle ve Listele
+        db.ref('requests').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('requestsList');
+            list.innerHTML = "";
 
-            if(localStorage.getItem("hub_admin_logged") === "true") {
-                document.getElementById("loginScreen").style.display = "none";
-                document.getElementById("adminPanel").style.display = "block";
-                renderAdminList();
-                renderStatusList();
+            if(!data) {
+                list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Henüz gelen bir istek yok.</p>';
+                return;
             }
-        }
 
-        function checkLogin() {
-            const pass = document.getElementById("adminPass").value;
-            db.ref('adminPassword').once('value').then(snap => {
-                let correctPass = snap.val() || "admin123";
-                if(pass === correctPass) {
-                    localStorage.setItem("hub_admin_logged", "true");
-                    document.getElementById("loginScreen").style.display = "none";
-                    document.getElementById("adminPanel").style.display = "block";
-                    renderAdminList();
-                    renderStatusList();
-                    showToast("🔓 Giriş başarılı!");
-                } else {
-                    showToast("❌ Hatalı şifre!");
-                }
+            Object.keys(data).forEach(key => {
+                let req = data[key];
+                list.innerHTML += `
+                    <div class="list-item">
+                        <div>
+                            <strong style="color: white; font-size: 15px;">${req.game}</strong>
+                            <p style="color: var(--text-muted); font-size: 13px; margin-top: 3px;">${req.details}</p>
+                            <span style="font-size: 11px; color: var(--primary);">${req.time}</span>
+                        </div>
+                        <button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteRequest('${key}')">Sil</button>
+                    </div>
+                `;
             });
-        }
+        });
 
-        function logout() { localStorage.removeItem("hub_admin_logged"); location.reload(); }
-
-        function saveSettings() {
-            db.ref('announcement').set(document.getElementById("announcementInput").value.trim());
-            db.ref('webhookUrl').set(document.getElementById("webhookInput").value.trim());
-            db.ref('validKey').set(document.getElementById("keyInput").value.trim());
-            showToast("✨ Ayarlar kaydedildi!");
-        }
-
-        function addStatus() {
-            let name = document.getElementById("statusName").value.trim();
-            let state = document.getElementById("statusState").value;
-            if(!name) { showToast("⚠ Oyun adı girin!"); return; }
-            db.ref('statuses').push({ name, state }).then(() => {
-                document.getElementById("statusName").value = "";
-                showToast("✨ Durum eklendi!");
-            });
-        }
-        function deleteStatus(id) { db.ref('statuses/' + id).remove().then(() => showToast("🗑 Durum silindi!")); }
-        function renderStatusList() {
-            db.ref('statuses').on('value', snapshot => {
-                let c = document.getElementById("adminStatusList");
-                let data = snapshot.val();
-                if(!data) { c.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Durum yok.</p>"; return; }
-                c.innerHTML = "";
-                Object.keys(data).forEach(id => {
-                    let s = data[id];
-                    c.innerHTML += `<div class="script-list-item"><div><strong>${s.name}</strong><br><small>${s.state}</small></div><button class="btn btn-danger" style="padding:5px 10px; font-size:11px;" onclick="deleteStatus('${id}')">Sil</button></div>`;
-                });
+        function updateAnnouncement() {
+            let text = document.getElementById('announcementInput').value;
+            db.ref('announcement').set(text).then(() => {
+                showToast("✅ Duyuru güncellendi!");
             });
         }
 
         function addScript() {
-            let name = document.getElementById("scriptName").value.trim();
-            let desc = document.getElementById("scriptDesc").value.trim();
-            let tag = document.getElementById("scriptTag").value.trim();
-            let code = document.getElementById("scriptCode").value.trim();
-            if(!name || !code) { showToast("⚠ Ad ve Kod zorunludur!"); return; }
+            let title = document.getElementById('scriptTitle').value.trim();
+            let desc = document.getElementById('scriptDesc').value.trim();
+            let image = document.getElementById('scriptImage').value.trim();
+            let code = document.getElementById('scriptCode').value.trim();
 
-            db.ref('scripts').push({ name, desc, tag: tag || "Genel", code }).then(() => {
-                // Discord Webhook Gönderimi
-                db.ref('webhookUrl').once('value').then(snap => {
-                    let webhookUrl = snap.val();
-                    if(webhookUrl) {
-                        fetch(webhookUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                content: "🚨 **Klakz Hub'a Yeni Script Eklendi!**",
-                                embeds: [{
-                                    title: name,
-                                    description: desc || "Açıklama yok.",
-                                    color: 65280,
-                                    fields: [{ name: "Etiket", value: tag || "Genel", inline: true }]
-                                }]
-                            })
-                        }).catch(err => console.log("Webhook gönderilemedi:", err));
-                    }
-                });
+            if(!title || !code) {
+                showToast("❌ Oyun adı ve script kodu zorunludur!");
+                return;
+            }
 
-                document.getElementById("scriptName").value = "";
-                document.getElementById("scriptDesc").value = "";
-                document.getElementById("scriptTag").value = "";
-                document.getElementById("scriptCode").value = "";
-                showToast("🚀 Script eklendi ve Discord'a bildirildi!");
+            db.ref('scripts').push({ title, desc, image, code }).then(() => {
+                showToast("✅ Script başarıyla eklendi!");
+                document.getElementById('scriptTitle').value = "";
+                document.getElementById('scriptDesc').value = "";
+                document.getElementById('scriptImage').value = "";
+                document.getElementById('scriptCode').value = "";
             });
         }
-        function deleteScript(id) { db.ref('scripts/' + id).remove().then(() => showToast("🗑 Script silindi!")); }
-        function renderAdminList() {
-            db.ref('scripts').on('value', snapshot => {
-                let c = document.getElementById("adminScriptList");
-                let data = snapshot.val();
-                if(!data) { c.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Script yok.</p>"; return; }
-                c.innerHTML = "";
-                Object.keys(data).forEach(id => {
-                    let s = data[id];
-                    c.innerHTML += `<div class="script-list-item"><div><strong>${s.name}</strong><br><small>${s.tag}</small></div><button class="btn btn-danger" style="padding:5px 10px; font-size:11px;" onclick="deleteScript('${id}')">Sil</button></div>`;
-                });
+
+        function deleteRequest(key) {
+            db.ref('requests/' + key).remove().then(() => {
+                showToast("🗑️ İstek silindi.");
             });
         }
 
