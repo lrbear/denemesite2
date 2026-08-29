@@ -17,8 +17,6 @@
         .admin-btn-danger { background: linear-gradient(135deg, var(--danger), #dc2626); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
         .admin-btn-danger:hover { box-shadow: 0 6px 16px rgba(239, 68, 68, 0.5); }
         .list-item { background: rgba(11, 12, 16, 0.4); border: 1px solid var(--border); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-        .file-upload-box { border: 2px dashed var(--border); padding: 20px; border-radius: 10px; text-align: center; background: rgba(11, 12, 16, 0.3); cursor: pointer; transition: 0.3s; }
-        .file-upload-box:hover { border-color: var(--primary); }
     </style>
 </head>
 <body>
@@ -80,7 +78,7 @@
             </div>
         </div>
 
-        <!-- Uygulama / Dosya İndirme Yönetimi (GÜNCELLENDİ) -->
+        <!-- Uygulama / Dosya İndirme Yönetimi -->
         <div class="admin-section">
             <h3>📥 Siteye Dosya Yükle / Uygulama Ekle (`downloads.html`)</h3>
             <input type="text" id="appName" class="admin-input" placeholder="Uygulama / Dosya Adı">
@@ -99,7 +97,7 @@
                 <input type="text" id="appLink" class="admin-input" placeholder="https://... (Dosya seçmezsen bu link kullanılır)">
             </div>
 
-            <button class="admin-btn" id="uploadAppBtn" onclick="addApp()">Uygulamayı Yayınla</button>
+            <button class="admin-btn" onclick="addApp()">Uygulamayı Yayınla</button>
         </div>
         <div class="admin-section">
             <h3>📂 Mevcut Uygulamalar Listesi</h3>
