@@ -3,14 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Script İsteği - Klakz Hub</title>
+    <title>Script İstegi - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script>
+        let isVerified = localStorage.getItem('klakz_verified');
+        let expireTime = localStorage.getItem('klakz_expire');
+        let now = new Date().getTime();
+        if (!isVerified || !expireTime || now > parseInt(expireTime)) {
+            localStorage.removeItem('klakz_verified');
+            localStorage.removeItem('klakz_expire');
+            window.location.href = 'key.html';
+        }
+    </script>
     <style>
-        .form-box { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--border); padding: 30px; border-radius: 16px; width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 15px; margin-bottom: 40px; }
-        .form-input { width: 100%; padding: 14px 20px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 15px; outline: none; transition: 0.3s; }
-        .form-input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+        .request-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 30px; width: 100%; max-width: 600px; backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 15px; }
+        .form-input, .form-textarea { width: 100%; padding: 14px 20px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 15px; outline: none; transition: 0.3s; }
+        .form-input:focus, .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); }
+        .form-textarea { resize: vertical; min-height: 120px; }
+        .btn-submit { background: var(--primary); border: none; color: white; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; width: 100%; font-size: 15px; }
+        .btn-submit:hover { background: var(--primary-hover); }
     </style>
 </head>
 <body>
@@ -34,14 +47,14 @@
         </nav>
     </header>
 
-    <div class="container" style="justify-content: flex-start;">
-        <h1 style="font-size: 36px; margin-top: 20px;">Script <span>İstek Formu</span></h1>
-        <p style="margin-bottom: 30px; color: var(--text-muted);">Oynadığın ve sitemizde görmek istediğin oyunun scriptini buraya yazarak bize bildirebilirsin.</p>
+    <div class="container" style="align-items: center;">
+        <h1 style="font-size: 36px; margin-bottom: 10px;">Script <span>İsteği</span></h1>
+        <p style="color: var(--text-muted); margin-bottom: 30px; text-align: center;">Oynadığın ve sitemizde görmek istediğin oyunları veya scriptleri bize bildir.</p>
 
-        <div class="form-box">
-            <input type="text" id="gameName" class="form-input" placeholder="Oyun Adı (Örn: Blox Fruits, Arsenal...)">
-            <textarea id="gameDesc" class="form-input" placeholder="İstediğin özellikler neler? (Örn: Auto Farm, ESP...)" style="height: 120px; resize: none;"></textarea>
-            <button style="background: var(--primary); border: none; color: white; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s;" onclick="sendRequest()">🚀 İsteği Gönder</button>
+        <div class="request-box">
+            <input type="text" id="gameName" class="form-input" placeholder="Oyun Adı (Örn: Blox Fruits)">
+            <textarea id="gameDetails" class="form-textarea" placeholder="İstediğin özellikler veya detaylar..."></textarea>
+            <button class="btn-submit" onclick="sendRequest()">İsteği Gönder</button>
         </div>
     </div>
 
@@ -61,28 +74,27 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        window.addEventListener('DOMContentLoaded', () => {
-            db.ref('announcement').on('value', snap => {
-                document.getElementById('topAnnouncement').textContent = snap.val() || "";
-            });
+        db.ref('announcement').on('value', snap => {
+            document.getElementById('topAnnouncement').textContent = snap.val() || "";
         });
 
         function sendRequest() {
             let name = document.getElementById('gameName').value.trim();
-            let desc = document.getElementById('gameDesc').value.trim();
+            let details = document.getElementById('gameDetails').value.trim();
+
             if(!name) {
-                showToast("⚠ Lütfen oyun adını yazın!");
+                showToast("❌ Lütfen oyun adını yazın!");
                 return;
             }
 
             db.ref('requests').push({
                 game: name,
-                details: desc,
+                details: details || "Detay belirtilmemiş.",
                 time: new Date().toLocaleString()
             }).then(() => {
-                showToast("✅ İstek başarıyla gönderildi!");
+                showToast("✅ İstek başarıyla yöneticiye iletildi!");
                 document.getElementById('gameName').value = "";
-                document.getElementById('gameDesc').value = "";
+                document.getElementById('gameDetails').value = "";
             });
         }
 
