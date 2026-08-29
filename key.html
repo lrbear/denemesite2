@@ -43,7 +43,7 @@
             <input type="text" id="keyInput" class="key-input" placeholder="Key'i buraya girin...">
             <button class="key-btn" onclick="verifyKey()">Key'i Doğrula</button>
             
-            <p style="color: var(--text-muted); font-size: 11px; margin-top: 5px;">Key doğrulanınca 24 saat boyunca tekrar istemez.</p>
+            <p style="color: var(--text-muted); font-size: 11px; margin-top: 5px;">Sekme kapatıldığında oturum sonlanır ve tekrar key istenir.</p>
         </div>
     </div>
 
@@ -83,9 +83,7 @@
                 }
 
                 if(isValid) {
-                    let expireTime = new Date().getTime() + (24 * 60 * 60 * 1000); // 24 saat
-                    localStorage.setItem('klakz_verified', 'true');
-                    localStorage.setItem('klakz_expire', expireTime);
+                    sessionStorage.setItem('klakz_verified', 'true');
                     showToast("✅ Key doğrulandı! Yönlendiriliyorsunuz...");
                     setTimeout(() => { window.location.href = 'index.html'; }, 1000);
                 } else {
