@@ -67,8 +67,6 @@
 
         function verifyKey() {
             let inputKey = document.getElementById('keyInput').value.trim();
-            
-            // Eğer key boş değilse veya belirli bir kelimeyse direkt kabul et
             if(inputKey.length > 0) {
                 let expireTime = new Date().getTime() + (24 * 60 * 60 * 1000);
                 localStorage.setItem('klakz_verified', 'true');
@@ -77,7 +75,7 @@
                 showToast("✅ Key başarıyla doğrulandı!");
                 setTimeout(() => { window.location.href = "script.html"; }, 1000);
             } else {
-                showToast("❌ Lütfen bir key girin!");
+                showToast("❌ Lütfen geçerli bir key girin!");
             }
         }
 
