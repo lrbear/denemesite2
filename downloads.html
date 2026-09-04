@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uygulama İndir - Klakz Hub</title>
+    <title>Admin Paneli - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script>
-        if (!sessionStorage.getItem('klakz_verified')) { window.location.href = 'key.html'; }
-    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <style>
-        .downloads-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
-        .download-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 25px; display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(10px); transition: 0.3s; }
-        .download-card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .btn-download { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 700; text-align: center; display: block; transition: 0.3s; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
-        .btn-download:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5); }
-        .badge-version { background: rgba(99, 102, 241, 0.2); color: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; width: fit-content; border: 1px solid var(--border); }
-        .file-info { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); background: rgba(11, 12, 16, 0.4); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); }
+        .admin-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 25px; width: 100%; max-width: 800px; margin-bottom: 25px; backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 15px; }
+        .admin-input { width: 100%; padding: 12px 18px; background: rgba(11, 12, 16, 0.6); border: 1px solid var(--border); border-radius: 10px; color: white; font-size: 14px; outline: none; }
+        .admin-input:focus { border-color: var(--primary); }
+        .admin-btn { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s ease; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); text-align: center; }
+        .admin-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5); }
+        .admin-btn-danger { background: linear-gradient(135deg, var(--danger), #dc2626); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+        .admin-btn-danger:hover { box-shadow: 0 6px 16px rgba(239, 68, 68, 0.5); }
+        .list-item { background: rgba(11, 12, 16, 0.4); border: 1px solid var(--border); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     </style>
 </head>
 <body>
@@ -33,23 +32,140 @@
             <a href="status.html">Durum</a>
             <a href="executors.html">Executor Rehberi</a>
             <a href="network.html">Projelerim</a>
-            <a href="downloads.html" class="active">Uygulamalar</a>
+            <a href="downloads.html">Uygulamalar</a>
             <a href="key.html">Key Sistemi</a>
             <a href="changelog.html">Güncellemeler</a>
             <a href="request.html">İstek</a>
-            <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
+            <a href="admin.html" class="active" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
         </nav>
     </header>
 
     <div class="container" style="align-items: center;">
-        <h1 style="font-size: 36px; margin-bottom: 10px;">Uygulama <span>İndirme Merkezi</span></h1>
-        <p style="color: var(--text-muted); margin-bottom: 30px; text-align: center;">Geliştirdiğimiz resmi araçları, yazılımları ve yardımcı uygulamaları buradan indirebilirsiniz.</p>
+        <h1 style="font-size: 36px; margin-bottom: 25px;">Yönetici <span>Paneli</span></h1>
 
-        <div class="downloads-grid" id="downloadsGrid">
-            <p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Uygulamalar yükleniyor...</p>
+        <!-- Duyuru Yönetimi -->
+        <div class="admin-section">
+            <h3>📢 Site Duyurusu Düzenle</h3>
+            <input type="text" id="announcementInput" class="admin-input" placeholder="Yeni duyuru metnini yazın...">
+            <button class="admin-btn" onclick="updateAnnouncement()">Duyuruyu Güncelle</button>
+        </div>
+
+        <!-- Key Yönetimi -->
+        <div class="admin-section">
+            <h3>🔑 Yeni Erişim Key'i Oluştur</h3>
+            <input type="text" id="keyInput" class="admin-input" placeholder="Örn: KLAKZ-VIP-2026 (Boş bırakırsan rastgele üretilir)">
+            <button class="admin-btn" onclick="generateKey()">Key Üret ve Kaydet</button>
+        </div>
+        <div class="admin-section">
+            <h3>📋 Aktif Key Listesi</h3>
+            <div id="adminKeysList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">Keyler yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- Proje Yönetimi -->
+        <div class="admin-section">
+            <h3>💻 Yeni Proje Ekle (`network.html`)</h3>
+            <input type="text" id="projTitle" class="admin-input" placeholder="Proje Adı">
+            <input type="text" id="projDesc" class="admin-input" placeholder="Proje Açıklaması">
+            <input type="text" id="projLink" class="admin-input" placeholder="İnceleme Linki URL">
+            <button class="admin-btn" onclick="addProject()">Projeyi Ekle</button>
+        </div>
+        <div class="admin-section">
+            <h3>📂 Mevcut Projeler Listesi</h3>
+            <div id="adminProjectsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">Projeler yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- Uygulama / Dosya İndirme Yönetimi -->
+        <div class="admin-section">
+            <h3>📥 Siteye Dosya Yükle / Uygulama Ekle (`downloads.html`)</h3>
+            <input type="text" id="appName" class="admin-input" placeholder="Uygulama / Dosya Adı">
+            <input type="text" id="appDesc" class="admin-input" placeholder="Kısa Açıklama">
+            <input type="text" id="appVersion" class="admin-input" placeholder="Sürüm (Örn: v1.0)">
+            
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 13px; color: var(--text-muted);">Seçenek A: Bilgisayardan Dosya Yükle (.zip, .exe, .rar vb.)</label>
+                <input type="file" id="appFile" class="admin-input" style="padding: 10px;">
+            </div>
+
+            <div style="text-align: center; color: var(--text-muted); font-size: 13px; font-weight: bold;">--- VEYA ---</div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 13px; color: var(--text-muted);">Seçenek B: Harici İndirme Linki Yapıştır</label>
+                <input type="text" id="appLink" class="admin-input" placeholder="https://... (Dosya seçmezsen bu link kullanılır)">
+            </div>
+
+            <button class="admin-btn" onclick="addApp()">Uygulamayı Yayınla</button>
+        </div>
+        <div class="admin-section">
+            <h3>📂 Mevcut Uygulamalar Listesi</h3>
+            <div id="adminAppsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">Uygulamalar yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- Script Yönetimi -->
+        <div class="admin-section">
+            <h3>➕ Yeni Script Ekle</h3>
+            <input type="text" id="scriptTitle" class="admin-input" placeholder="Oyun / Script Adı">
+            <input type="text" id="scriptDesc" class="admin-input" placeholder="Kısa Açıklama">
+            <input type="text" id="scriptImage" class="admin-input" placeholder="Görsel URL (İsteğe bağlı)">
+            <textarea id="scriptCode" class="admin-input" style="resize: vertical; min-height: 80px;" placeholder="Lua Script Kodu..."></textarea>
+            <button class="admin-btn" onclick="addScript()">Scripti Yayınla</button>
+        </div>
+        <div class="admin-section">
+            <h3>📋 Mevcut Scriptleri Yönet / Sil</h3>
+            <div id="adminScriptsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">Scriptler yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- Executor Yönetimi -->
+        <div class="admin-section">
+            <h3>🚀 Yeni Executor Ekle</h3>
+            <input type="text" id="execName" class="admin-input" placeholder="Executor Adı">
+            <input type="text" id="execDesc" class="admin-input" placeholder="Kısa Açıklama">
+            <input type="text" id="execLink" class="admin-input" placeholder="İndirme Linki URL">
+            <input type="text" id="execImage" class="admin-input" placeholder="Logo URL">
+            <button class="admin-btn" onclick="addExecutor()">Executor Ekle</button>
+        </div>
+        <div class="admin-section">
+            <h3>📂 Mevcut Executor Listesi</h3>
+            <div id="adminExecutorsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">Executorlar yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- Durum Yönetimi -->
+        <div class="admin-section">
+            <h3>🟢 Sistem Durumu Ekle</h3>
+            <input type="text" id="statusName" class="admin-input" placeholder="Servis Adı">
+            <select id="statusState" class="admin-input">
+                <option value="Çalışıyor (Working)">Çalışıyor (Working)</option>
+                <option value="Güncelleniyor (Updating)">Güncelleniyor (Updating)</option>
+                <option value="Patlak (Patched)">Patlak (Patched)</option>
+            </select>
+            <button class="admin-btn" onclick="addStatus()">Durum Ekle / Güncelle</button>
+        </div>
+        <div class="admin-section">
+            <h3>📊 Mevcut Durum Listesi</h3>
+            <div id="adminStatusList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">Durumlar yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- İstekler -->
+        <div class="admin-section">
+            <h3>📥 Kullanıcı Script İstekleri</h3>
+            <div id="requestsList" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: var(--text-muted); text-align: center;">İstek yok.</p>
+            </div>
         </div>
     </div>
 
+    <div id="toast">Bildirim mesajı</div>
     <footer><p>&copy; 2026 Klakz Hub. Tüm hakları saklıdır.</p></footer>
 
     <script>
@@ -64,31 +180,170 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        const storage = firebase.storage();
 
-        db.ref('announcement').on('value', snap => { document.getElementById('topAnnouncement').textContent = snap.val() || ""; });
+        db.ref('announcement').on('value', snap => {
+            let val = snap.val() || "";
+            document.getElementById('topAnnouncement').textContent = val;
+            document.getElementById('announcementInput').value = val;
+        });
 
-        db.ref('downloads').on('value', snap => {
+        db.ref('validKeys').on('value', snap => {
             const data = snap.val();
-            const grid = document.getElementById('downloadsGrid');
-            grid.innerHTML = "";
-            if(!data) { grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Henüz indirilebilir uygulama eklenmemiş.</p>'; return; }
-            Object.values(data).forEach(app => {
-                let sizeInfo = app.fileSize ? `<div class="file-info"><span>Boyut: ${app.fileSize}</span><span>Tür: Dosya</span></div>` : "";
-                grid.innerHTML += `
-                    <div class="download-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <strong style="color: white; font-size: 18px;">${app.name}</strong>
-                            <span class="badge-version">${app.version || 'v1.0'}</span>
-                        </div>
-                        <p style="color: var(--text-muted); font-size: 13px; flex: 1;">${app.desc || "Açıklama belirtilmemiş."}</p>
-                        ${sizeInfo}
-                        <a href="${app.link}" target="_blank" download class="btn-download">📥 Hemen İndir</a>
-                    </div>
-                `;
+            const list = document.getElementById('adminKeysList');
+            list.innerHTML = "";
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı key yok.</p>'; return; }
+            Object.keys(data).forEach(id => {
+                list.innerHTML += `<div class="list-item"><strong style="color: var(--accent); font-family: monospace;">${data[id]}</strong><button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteData('validKeys', '${id}')">Sil</button></div>`;
             });
         });
 
+        db.ref('projects').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('adminProjectsList');
+            list.innerHTML = "";
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı proje yok.</p>'; return; }
+            Object.keys(data).forEach(id => {
+                list.innerHTML += `<div class="list-item"><strong style="color: white;">${data[id].title}</strong><button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteData('projects', '${id}')">Sil</button></div>`;
+            });
+        });
+
+        db.ref('downloads').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('adminAppsList');
+            list.innerHTML = "";
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı uygulama yok.</p>'; return; }
+            Object.keys(data).forEach(id => {
+                list.innerHTML += `<div class="list-item"><strong style="color: white;">${data[id].name} <span style="font-size: 12px; color: var(--primary);">(${data[id].version})</span></strong><button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteData('downloads', '${id}')">Sil</button></div>`;
+            });
+        });
+
+        db.ref('scripts').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('adminScriptsList');
+            list.innerHTML = "";
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı script yok.</p>'; return; }
+            Object.keys(data).forEach(id => {
+                list.innerHTML += `<div class="list-item"><strong style="color: white;">${data[id].title}</strong><button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteData('scripts', '${id}')">Sil</button></div>`;
+            });
+        });
+
+        db.ref('executors').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('adminExecutorsList');
+            list.innerHTML = "";
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı executor yok.</p>'; return; }
+            Object.keys(data).forEach(id => {
+                list.innerHTML += `<div class="list-item"><strong style="color: white;">${data[id].name}</strong><button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteData('executors', '${id}')">Sil</button></div>`;
+            });
+        });
+
+        db.ref('statuses').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('adminStatusList');
+            list.innerHTML = "";
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Kayıtlı durum yok.</p>'; return; }
+            Object.keys(data).forEach(id => {
+                list.innerHTML += `<div class="list-item"><div><strong style="color: white;">${data[id].name}</strong> <span style="font-size: 12px; color: var(--primary);">[${data[id].state}]</span></div><button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteData('statuses', '${id}')">Sil</button></div>`;
+            });
+        });
+
+        db.ref('requests').on('value', snap => {
+            const data = snap.val();
+            const list = document.getElementById('requestsList');
+            list.innerHTML = "";
+            if(!data) { list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">İstek yok.</p>'; return; }
+            Object.keys(data).forEach(id => {
+                list.innerHTML += `<div class="list-item"><div><strong style="color: white;">${data[id].game}</strong><p style="color: var(--text-muted); font-size: 13px;">${data[id].details}</p></div><button class="admin-btn admin-btn-danger" style="padding: 8px 14px; font-size: 12px;" onclick="deleteData('requests', '${id}')">Sil</button></div>`;
+            });
+        });
+
+        function updateAnnouncement() {
+            db.ref('announcement').set(document.getElementById('announcementInput').value).then(() => showToast("✅ Duyuru güncellendi!"));
+        }
+
+        function generateKey() {
+            let customKey = document.getElementById('keyInput').value.trim();
+            let newKey = customKey !== "" ? customKey : "KLAKZ-" + Math.random().toString(36).substring(2, 8).toUpperCase() + "-" + Math.floor(1000 + Math.random() * 9000);
+            db.ref('validKeys').push(newKey).then(() => { showToast("🔑 Key üretildi!"); document.getElementById('keyInput').value = ""; });
+        }
+
+        function addProject() {
+            let title = document.getElementById('projTitle').value.trim();
+            let desc = document.getElementById('projDesc').value.trim();
+            let link = document.getElementById('projLink').value.trim();
+            if(!title || !link) { showToast("❌ Proje adı ve linki zorunludur!"); return; }
+            db.ref('projects').push({ title, desc, link }).then(() => { showToast("✅ Proje eklendi!"); document.getElementById('projTitle').value=""; document.getElementById('projDesc').value=""; document.getElementById('projLink').value=""; });
+        }
+
+        function addApp() {
+            let name = document.getElementById('appName').value.trim();
+            let desc = document.getElementById('appDesc').value.trim();
+            let link = document.getElementById('appLink').value.trim();
+            let version = document.getElementById('appVersion').value.trim() || "v1.0";
+            let fileInput = document.getElementById('appFile');
+            
+            if(!name) { showToast("❌ Lütfen uygulama adı girin!"); return; }
+
+            if(fileInput.files.length > 0) {
+                let file = fileInput.files[0];
+                let storageRef = storage.ref('uploads/' + Date.now() + '_' + file.name);
+                showToast("⏳ Dosya yükleniyor, lütfen bekleyin...");
+                
+                storageRef.put(file).then(snapshot => {
+                    snapshot.ref.getDownloadURL().then(downloadURL => {
+                        db.ref('downloads').push({ name, desc, link: downloadURL, version, fileName: file.name, fileSize: (file.size / (1024*1024)).toFixed(2) + " MB" }).then(() => {
+                            showToast("✅ Dosya başarıyla yüklendi ve yayınlandı!");
+                            document.getElementById('appName').value=""; document.getElementById('appDesc').value=""; document.getElementById('appLink').value=""; document.getElementById('appVersion').value=""; fileInput.value="";
+                        });
+                    });
+                }).catch(error => {
+                    showToast("❌ Dosya yükleme hatası: " + error.message);
+                });
+            } else if(link) {
+                db.ref('downloads').push({ name, desc, link, version }).then(() => {
+                    showToast("✅ Uygulama eklendi!");
+                    document.getElementById('appName').value=""; document.getElementById('appDesc').value=""; document.getElementById('appLink').value=""; document.getElementById('appVersion').value="";
+                });
+            } else {
+                showToast("❌ Lütfen bir dosya seçin ya da harici bir link girin!");
+            }
+        }
+
+        function addScript() {
+            let title = document.getElementById('scriptTitle').value.trim();
+            let desc = document.getElementById('scriptDesc').value.trim();
+            let image = document.getElementById('scriptImage').value.trim();
+            let code = document.getElementById('scriptCode').value.trim();
+            if(!title || !code) { showToast("❌ Oyun adı ve script kodu zorunludur!"); return; }
+            db.ref('scripts').push({ title, desc, image, code }).then(() => { showToast("✅ Script eklendi!"); document.getElementById('scriptTitle').value=""; document.getElementById('scriptDesc').value=""; document.getElementById('scriptImage').value=""; document.getElementById('scriptCode').value=""; });
+        }
+
+        function addExecutor() {
+            let name = document.getElementById('execName').value.trim();
+            let desc = document.getElementById('execDesc').value.trim();
+            let link = document.getElementById('execLink').value.trim();
+            let image = document.getElementById('execImage').value.trim();
+            if(!name || !link) { showToast("❌ Ad ve link zorunludur!"); return; }
+            db.ref('executors').push({ name, desc, link, image }).then(() => { showToast("✅ Executor eklendi!"); document.getElementById('execName').value=""; document.getElementById('execDesc').value=""; document.getElementById('execLink').value=""; document.getElementById('execImage').value=""; });
+        }
+
+        function addStatus() {
+            let name = document.getElementById('statusName').value.trim();
+            let state = document.getElementById('statusState').value;
+            if(!name) { showToast("❌ İsim boş olamaz!"); return; }
+            db.ref('statuses').push({ name, state }).then(() => { showToast("✅ Durum eklendi!"); document.getElementById('statusName').value=""; });
+        }
+
+        function deleteData(path, id) { db.ref(path + '/' + id).remove().then(() => showToast("🗑️ Silindi.")); }
+
         function toggleMenu() { document.querySelector('nav').classList.toggle('active'); }
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
     </script>
 </body>
 </html>
