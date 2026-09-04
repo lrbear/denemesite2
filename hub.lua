@@ -90,31 +90,87 @@ SubmitBtn.MouseButton1Click:Connect(function()
 
             -- Ana Sekme (Scriptler)
             local MainTab = Window:CreateTab("Scriptler", 4483362458)
-            local MainSection = MainTab:CreateSection("Oyun Scriptleri")
+            local MainSection = MainTab:CreateSection("Genel Araçlar")
 
-            -- 1. Script Butonu: 2 Player Evolution Tycoon
+            -- Infinite Yield (Admin)
             MainTab:CreateButton({
-               Name = "2Player Evolution Tycoon",
+               Name = "Infinite Yield (Admin)",
                Callback = function()
-                   local success, err = pcall(function()
-                       loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/2PLAYEREvolutionTycoon"))()
+                   pcall(function()
+                       loadstring(game:HttpGet("https://obj.wearedevs.net/2/scripts/Infinite%20Yield.lua"))()
                    end)
-                   if not success then
-                       warn("Script çalıştırılamadı: " .. tostring(err))
-                   end
                end,
             })
 
-            -- 2. Script Butonu: Murders vs Sheriff
+            -- Speed / Araç Scripti
+            MainTab:CreateButton({
+               Name = "Speed / Araç Scripti",
+               Callback = function()
+                   pcall(function()
+                       loadstring(game:HttpGet("https://obj.wearedevs.net/s/6a91b2ad9d49ace16dd83221.lua"))()
+                   end)
+               end,
+            })
+
+            local GameSection = MainTab:CreateSection("Oyun Scriptleri")
+
+            -- 1CutGrassAdventure
+            MainTab:CreateButton({
+               Name = "1CutGrassAdventure",
+               Callback = function()
+                   pcall(function()
+                       loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/1CutGrassAdventure"))()
+                   end)
+               end,
+            })
+
+            -- Muscle Legends
+            MainTab:CreateButton({
+               Name = "Muscle Legends",
+               Callback = function()
+                   pcall(function()
+                       loadstring(game:HttpGet("https://raw.githubusercontent.com/ikzzz1444/Script/main/moonveil2.lua"))()
+                   end)
+               end,
+            })
+
+            -- Heroes RNG
+            MainTab:CreateButton({
+               Name = "Heroes RNG",
+               Callback = function()
+                   pcall(function()
+                       loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/HeroesRNG"))()
+                   end)
+               end,
+            })
+
+            -- +1 Strength to Grow Your Arm
+            MainTab:CreateButton({
+               Name = "+1 Strength to Grow Your Arm",
+               Callback = function()
+                   pcall(function()
+                       loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/1StrengthtoGrowYourArm"))()
+                   end)
+               end,
+            })
+
+            -- 2Player Evolution Tycoon
+            MainTab:CreateButton({
+               Name = "2Player Evolution Tycoon",
+               Callback = function()
+                   pcall(function()
+                       loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/2PLAYEREvolutionTycoon"))()
+                   end)
+               end,
+            })
+
+            -- Murders vs Sheriff
             MainTab:CreateButton({
                Name = "Murders vs Sheriff",
                Callback = function()
-                   local success, err = pcall(function()
+                   pcall(function()
                        loadstring(game:HttpGet("https://pastebin.com/raw/uZGr28ym"))()
                    end)
-                   if not success then
-                       warn("Script çalıştırılamadı: " .. tostring(err))
-                   end
                end,
             })
 
