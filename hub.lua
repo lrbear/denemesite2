@@ -1,8 +1,9 @@
--- Klakz Hub - Güncellenmiş Dinamik Script Yükleyici
+-- Klakz Hub - Kesin Çözüm Scripti
 local HttpService = game:GetService("HttpService")
+
+-- Doğrudan Firebase veritabanı JSON adresi (Vercel'i aradan çıkarıyoruz)
 local firebaseURL = "https://klakz-database-default-rtdb.firebaseio.com/scripts.json"
 
--- Arayüz (UI) Oluşturma
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "KlakzHub"
 ScreenGui.ResetOnSpawn = false
@@ -19,7 +20,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 45)
 Title.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Text = "Klakz Hub - Siteden Gelenler"
+Title.Text = "Klakz Hub - Canlı Sistem"
 Title.TextSize = 16
 Title.Font = Enum.Font.SourceSansBold
 Title.Parent = MainFrame
@@ -36,16 +37,14 @@ local UIListLayout = Instance.new("UIListLayout")
 UIListLayout.Padding = UDim.new(0, 8)
 UIListLayout.Parent = ScrollingFrame
 
--- Verileri Siteden (Firebase) Çekme Fonksiyonu
 task.spawn(function()
     local success, response = pcall(function()
+        -- Doğrudan Firebase'e istek atıyoruz
         return HttpService:JSONDecode(HttpService:GetAsync(firebaseURL))
     end)
     
     if success and response then
-        -- Firebase'den gelen verilerin anahtarlarını kontrol ediyoruz
         for id, scriptData in pairs(response) do
-            -- Eğer veri tablosu doğru formatta geldiyse butonu oluştur
             if type(scriptData) == "table" and scriptData.title and scriptData.code then
                 local btn = Instance.new("TextButton")
                 btn.Size = UDim2.new(1, 0, 0, 45)
@@ -56,14 +55,10 @@ task.spawn(function()
                 btn.Font = Enum.Font.SourceSansBold
                 btn.Parent = ScrollingFrame
                 
-                -- Butona tıklandığında siteden gelen Lua kodunu çalıştır
                 btn.MouseButton1Click:Connect(function()
-                    local runSuccess, err = pcall(function()
+                    pcall(function()
                         loadstring(scriptData.code)()
                     end)
-                    if not runSuccess then
-                        warn("Script Çalıştırma Hatası: " + tostring(err))
-                    end
                 end)
             end
         end
@@ -71,8 +66,8 @@ task.spawn(function()
         local errLbl = Instance.new("TextLabel")
         errLbl.Size = UDim2.new(1, 0, 0, 40)
         errLbl.TextColor3 = Color3.fromRGB(255, 50, 50)
-        errLbl.Text = "Scriptler siteden çekilemedi!"
-        errLbl.TextSize = 14
+        errLbl.Text = "Veriler çekilemedi! Bağlantıyı kontrol et."
+        errLbl.TextSize = 13
         errLbl.Parent = ScrollingFrame
     end
 end)
