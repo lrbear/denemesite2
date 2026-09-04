@@ -8,39 +8,15 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script>
-        // 24 Saatlik Süre Denetimi
-        let isVerified = localStorage.getItem('klakz_verified');
-        let expireTime = localStorage.getItem('klakz_expire');
-        let now = new Date().getTime();
-        if (!isVerified || !expireTime || now > parseInt(expireTime)) {
-            localStorage.removeItem('klakz_verified');
-            localStorage.removeItem('klakz_expire');
-            window.location.href = 'key.html';
-        }
+        if (!sessionStorage.getItem('klakz_verified')) { window.location.href = 'key.html'; }
     </script>
     <style>
-        .search-area { display: flex; gap: 10px; width: 100%; max-width: 600px; margin-bottom: 10px; }
-        .search-box { flex: 1; padding: 14px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 16px; outline: none; }
-        .btn-reset { background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: white; padding: 0 18px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .btn-reset:hover { background: var(--primary); }
-        
-        .search-history { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; width: 100%; max-width: 600px; }
-        .history-tag { background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 5px 12px; border-radius: 20px; font-size: 12px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
-        .history-tag:hover { background: var(--primary); color: white; }
-        
-        .script-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; width: 100%; }
-        .script-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px); display: flex; flex-direction: column; transition: 0.3s; }
+        .scripts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; width: 100%; max-width: 1100px; }
+        .script-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(10px); transition: 0.3s; }
         .script-card:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .script-thumb { width: 100%; height: 160px; object-fit: cover; background: #1a1c23; }
-        .script-content { padding: 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
-        .script-title { font-size: 18px; font-weight: 700; color: white; }
-        .script-desc { font-size: 13px; color: var(--text-muted); flex: 1; }
-        .script-btns { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-action { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; font-size: 13px; transition: 0.2s; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-copy { background: var(--primary); color: white; }
-        .btn-copy:hover { background: var(--primary-hover); }
-        .btn-report { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-        .btn-report:hover { background: rgba(239, 68, 68, 0.4); }
+        .script-img { width: 100%; height: 160px; object-fit: cover; border-radius: 10px; background: rgba(11, 12, 16, 0.5); border: 1px solid var(--border); }
+        .btn-copy { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; text-align: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .btn-copy:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5); }
     </style>
 </head>
 <body>
@@ -56,25 +32,19 @@
             <a href="status.html">Durum</a>
             <a href="executors.html">Executor Rehberi</a>
             <a href="network.html">Projelerim</a>
+            <a href="downloads.html">Uygulamalar</a>
             <a href="key.html">Key Sistemi</a>
             <a href="changelog.html">Güncellemeler</a>
-            <a href="faq.html">SSS</a>
             <a href="request.html">İstek</a>
             <a href="admin.html" style="color: var(--accent); font-weight: 700;">⚙️ Admin</a>
         </nav>
     </header>
 
     <div class="container" style="align-items: center;">
-        <h1 style="font-size: 36px; margin-bottom: 10px;">Script <span>Kütüphanesi</span></h1>
-        <p style="color: var(--text-muted); margin-bottom: 25px;">Aradığın oyunu yaz ve en güncel Lua scriptine hemen ulaş.</p>
+        <h1 style="font-size: 36px; margin-bottom: 10px;">Oyun Scriptleri <span>Merkezi</span></h1>
+        <p style="color: var(--text-muted); margin-bottom: 30px; text-align: center;">En güncel ve sorunsuz çalışan Lua scriptlerine buradan ulaşabilirsiniz.</p>
 
-        <div class="search-area">
-            <input type="text" id="searchInput" class="search-box" placeholder="Oyun veya script ara..." oninput="filterScripts()">
-            <button class="btn-reset" onclick="resetSearch()" title="Tümünü Göster">🔄 Sıfırla</button>
-        </div>
-        <div class="search-history" id="searchHistory"></div>
-
-        <div class="script-grid" id="scriptGrid">
+        <div class="scripts-grid" id="scriptsGrid">
             <p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Scriptler yükleniyor...</p>
         </div>
     </div>
@@ -95,113 +65,37 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let allScripts = [];
+        db.ref('announcement').on('value', snap => { document.getElementById('topAnnouncement').textContent = snap.val() || ""; });
 
-        window.addEventListener('DOMContentLoaded', () => {
-            db.ref('announcement').on('value', snap => {
-                document.getElementById('topAnnouncement').textContent = snap.val() || "";
-            });
-
-            db.ref('scripts').on('value', snap => {
-                const data = snap.val();
-                const grid = document.getElementById('scriptGrid');
-                grid.innerHTML = "";
-                allScripts = [];
-
-                if(!data) {
-                    grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Henüz script eklenmemiş.</p>';
-                    return;
-                }
-
-                Object.keys(data).forEach(key => {
-                    let s = data[key];
-                    s.id = key;
-                    allScripts.push(s);
-                });
-
-                renderScripts(allScripts);
-            });
-
-            loadHistory();
-        });
-
-        function renderScripts(list) {
-            const grid = document.getElementById('scriptGrid');
+        db.ref('scripts').on('value', snap => {
+            const data = snap.val();
+            const grid = document.getElementById('scriptsGrid');
             grid.innerHTML = "";
-            if(list.length === 0) {
-                grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Aradığınız kriterlere uygun script bulunamadı.</p>';
+            
+            if(!data) {
+                grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Henüz eklenmiş script bulunmuyor.</p>';
                 return;
             }
 
-            list.forEach(s => {
-                let thumb = s.image && s.image.trim() !== "" ? s.image : "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500&auto=format&fit=crop&q=60";
+            Object.values(data).forEach(script => {
+                let imgTag = script.image ? `<img src="${script.image}" class="script-img" alt="Oyun Resmi">` : "";
+                let encodedCode = encodeURIComponent(script.code || "");
+                
                 grid.innerHTML += `
                     <div class="script-card">
-                        <img src="${thumb}" class="script-thumb" alt="Oyun Görseli">
-                        <div class="script-content">
-                            <div class="script-title">${s.title}</div>
-                            <div class="script-desc">${s.desc || "Açıklama bulunmuyor."}</div>
-                            <div class="script-btns">
-                                <button class="btn-action btn-copy" onclick="copyScript('${s.code}')">📋 Kopyala</button>
-                                <button class="btn-action btn-report" onclick="reportScript('${s.title}')">⚠️ Patlak Bildir</button>
-                            </div>
-                        </div>
+                        ${imgTag}
+                        <strong style="color: white; font-size: 18px;">${script.title}</strong>
+                        <p style="color: var(--text-muted); font-size: 13px; flex: 1;">${script.desc || "Açıklama girilmemiş."}</p>
+                        <button class="btn-copy" onclick="copyScript('${encodedCode}')">📋 Scripti Kopyala</button>
                     </div>
                 `;
             });
-        }
+        });
 
-        function filterScripts() {
-            let query = document.getElementById('searchInput').value.toLowerCase().trim();
-            let filtered = allScripts.filter(s => s.title.toLowerCase().includes(query) || (s.desc && s.desc.toLowerCase().includes(query)));
-            renderScripts(filtered);
-
-            if(query.length > 2) {
-                saveHistory(query);
-            }
-        }
-
-        function resetSearch() {
-            document.getElementById('searchInput').value = "";
-            renderScripts(allScripts);
-        }
-
-        function saveHistory(term) {
-            let history = JSON.parse(localStorage.getItem('klakz_search_history') || '[]');
-            if(!history.includes(term)) {
-                history.unshift(term);
-                if(history.length > 5) history.pop();
-                localStorage.setItem('klakz_search_history', JSON.stringify(history));
-                loadHistory();
-            }
-        }
-
-        function loadHistory() {
-            let history = JSON.parse(localStorage.getItem('klakz_search_history') || '[]');
-            let box = document.getElementById('searchHistory');
-            box.innerHTML = "";
-            history.forEach(h => {
-                box.innerHTML += `<div class="history-tag" onclick="searchByTag('${h}')">${h}</div>`;
-            });
-        }
-
-        function searchByTag(term) {
-            document.getElementById('searchInput').value = term;
-            filterScripts();
-        }
-
-        function copyScript(code) {
+        function copyScript(encodedCode) {
+            let code = decodeURIComponent(encodedCode);
             navigator.clipboard.writeText(code).then(() => {
-                showToast("✅ Script başarıyla kopyalandı!");
-            });
-        }
-
-        function reportScript(title) {
-            db.ref('reports').push({
-                script: title,
-                time: new Date().toLocaleString()
-            }).then(() => {
-                showToast("🚨 Patlak bildirimi yöneticiye iletildi!");
+                showToast("✅ Script panoya kopyalandı!");
             });
         }
 
