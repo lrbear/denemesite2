@@ -1,0 +1,15 @@
+export default async function handler(req, res) {
+    const firebaseURL = "https://klakz-database-default-rtdb.firebaseio.com/scripts.json";
+
+    try {
+        const response = await fetch(firebaseURL);
+        const data = await response.json();
+
+        // Roblox'un okuyabileceği ham JSON formatında veriyi dışarı açıyoruz
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Content-Type', 'application/json');
+        res.status(200).json(data || {});
+    } catch (error) {
+        res.status(500).json({ error: "Veriler alınamadı" });
+    }
+}
