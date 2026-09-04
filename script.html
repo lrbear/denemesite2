@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scriptler - Klakz Hub</title>
+    <title>Script Hub - Klakz Hub</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -11,6 +11,11 @@
         if (!sessionStorage.getItem('klakz_verified')) { window.location.href = 'key.html'; }
     </script>
     <style>
+        .hub-banner { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 25px; margin-bottom: 30px; backdrop-filter: blur(10px); width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 15px; }
+        .lua-code-box { background: rgba(11, 12, 16, 0.8); border: 1px solid var(--border); border-radius: 12px; padding: 15px; color: var(--accent); font-family: monospace; font-size: 13px; white-space: pre-wrap; overflow-x: auto; max-height: 200px; text-align: left; }
+        .btn-luacopy { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; text-align: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .btn-luacopy:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5); }
+
         .scripts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; width: 100%; max-width: 1100px; }
         .script-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 15px; backdrop-filter: blur(10px); transition: 0.3s; }
         .script-card:hover { transform: translateY(-5px); border-color: var(--primary); }
@@ -41,9 +46,34 @@
     </header>
 
     <div class="container" style="align-items: center;">
-        <h1 style="font-size: 36px; margin-bottom: 10px;">Oyun Scriptleri <span>Merkezi</span></h1>
-        <p style="color: var(--text-muted); margin-bottom: 30px; text-align: center;">En güncel ve sorunsuz çalışan Lua scriptlerine buradan ulaşabilirsiniz.</p>
+        <h1 style="font-size: 36px; margin-bottom: 10px;">Klakz <span>Script Hub</span></h1>
+        <p style="color: var(--text-muted); margin-bottom: 25px; text-align: center;">Sitedeki admin panelinden yönetilen scriptler hem burada listelenir hem de oyun içi menünüze otomatik gelir.</p>
 
+        <!-- Sitenin İçindeki Oyun İçi Lua Kod Bölümü -->
+        <div class="hub-banner">
+            <h3 style="color: white; font-size: 18px;">🎮 Oyun İçi Lua Hub Kodun (Otomatik Senkronize)</h3>
+            <p style="color: var(--text-muted); font-size: 13px;">Bu Lua kodunu kendi oyun içi scriptine ekleyebilirsin. Siteden eklediğin her script direkt bu koda yansır.</p>
+            
+            <div class="lua-code-box" id="luaCodeBox">
+local HttpService = game:GetService("HttpService")
+local firebaseURL = "https://klakz-database-default-rtdb.firebaseio.com/scripts.json"
+
+local success, response = pcall(function()
+    return HttpService:JSONDecode(HttpService:GetAsync(firebaseURL))
+end)
+
+if success and response then
+    for id, scriptData in pairs(response) do
+        local oyunAdi = scriptData.title
+        print("Siteden gelen oyun: " .. oyunAdi)
+        -- Buraya kendi UI buton oluşturma kodlarını yazabilirsin
+    end
+end
+            </div>
+            <button class="btn-luacopy" onclick="copyLuaCode()">📋 Lua Kodunu Panoya Kopyala</button>
+        </div>
+
+        <!-- Web Sitesinde Görnen Script Kartları -->
         <div class="scripts-grid" id="scriptsGrid">
             <p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">Scriptler yükleniyor...</p>
         </div>
@@ -67,6 +97,7 @@
 
         db.ref('announcement').on('value', snap => { document.getElementById('topAnnouncement').textContent = snap.val() || ""; });
 
+        // Firebase'den scriptleri çekip web sitesinde kartlar halinde listeleme
         db.ref('scripts').on('value', snap => {
             const data = snap.val();
             const grid = document.getElementById('scriptsGrid');
@@ -96,6 +127,13 @@
             let code = decodeURIComponent(encodedCode);
             navigator.clipboard.writeText(code).then(() => {
                 showToast("✅ Script panoya kopyalandı!");
+            });
+        }
+
+        function copyLuaCode() {
+            let codeText = document.getElementById('luaCodeBox').innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                showToast("✅ Lua kod tabanı panoya kopyalandı!");
             });
         }
 
